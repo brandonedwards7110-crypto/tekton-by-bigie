@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>KB Photography &mdash; Florida Panhandle Photographer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #faf5ea; --cream-deep: #f0e6d2; --ink: #2b2621; --ink-soft: #5c534a;
+    --gold: #c9a24b; --teal: #2f6f6a; --nav-h: 64px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-snap-type: y mandatory; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ink); background: var(--cream); -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  h1, h2, .display { font-family: "Playfair Display", serif; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+  body > section { scroll-snap-align: start; scroll-snap-stop: always; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--nav-h); box-sizing: border-box;
+    z-index: 500; display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 20px; background: rgba(250,245,234,0.88); backdrop-filter: blur(6px);
+  }
+  nav .logo img { height: 38px; display: block; }
+  .nav-links { display: flex; }
+  .nav-links a { text-decoration: none; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin-left: 26px; color: var(--ink-soft); }
+  .nav-links a:hover { color: var(--teal); }
+  .nav-toggle { display: none; background: none; border: none; width: 34px; height: 34px; padding: 0; cursor: pointer; }
+  .nav-toggle span { display: block; width: 24px; height: 2px; background: var(--ink); margin: 6px auto; }
+  .nav-drawer {
+    position: fixed; top: var(--nav-h); left: 0; right: 0; background: var(--cream);
+    display: none; flex-direction: column; padding: 10px 24px 18px; z-index: 499;
+    box-shadow: 0 12px 20px rgba(0,0,0,0.08);
+  }
+  .nav-drawer a { text-decoration: none; padding: 12px 0; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink); border-bottom: 1px solid var(--cream-deep); }
+  .nav-drawer.open { display: flex; }
+
+  @media (max-width: 760px) {
+    :root { --nav-h: 56px; }
+    .nav-links { display: none; }
+    .nav-toggle { display: block; }
+    nav .logo img { height: 32px; }
+  }
+
+  .hero {
+    height: 100dvh; box-sizing: border-box; overflow: hidden;
+    display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center;
+    max-width: 1160px; margin: 0 auto; padding: calc(var(--nav-h) + 16px) 24px 24px;
+  }
+  .hero-photo { border-radius: 18px; overflow: hidden; box-shadow: 0 30px 70px rgba(43,38,33,0.22); max-height: 56dvh; }
+  .hero-photo img { width: 100%; height: 100%; display: block; object-fit: cover; }
+  .hero h1 { font-size: clamp(1.7rem, 3.6vw, 2.9rem); margin: 0 0 16px; line-height: 1.18; font-style: italic; font-family: "Cormorant Garamond", serif; font-weight: 500; }
+  .hero p { color: var(--ink-soft); line-height: 1.6; font-size: 0.98rem; margin: 0 0 18px; }
+  .style-strip { display: flex; gap: 10px; margin: 18px 0 22px; }
+  .style-strip figure { margin: 0; flex: 1; }
+  .style-strip img { width: 100%; height: 70px; object-fit: cover; border-radius: 10px; }
+  .style-strip figcaption { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); margin-top: 5px; text-align: center; }
+  .hero .cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .cta { display: inline-block; padding: 12px 24px; border-radius: 999px; font-weight: 700; text-decoration: none; font-size: 0.88rem; }
+  .cta.primary { background: var(--teal); color: #fff; }
+  .cta.secondary { border: 1.5px solid var(--ink); color: var(--ink); }
+
+  @media (max-width: 760px) {
+    .hero { grid-template-columns: 1fr; text-align: center; overflow-y: auto; height: 100dvh; padding-bottom: 90px; }
+    .hero-photo { max-height: 34dvh; margin-top: 6px; }
+    .style-strip { justify-content: center; }
+    .hero .cta-row { justify-content: center; }
+    .hero h1 { font-size: 1.5rem; }
+  }
+
+  .albums-intro {
+    position: relative; height: 100dvh; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+    text-align: center; overflow: hidden; color: #fff;
+  }
+  .albums-intro .bg-slideshow { position: absolute; inset: 0; }
+  .albums-intro .bg-slideshow img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.6s ease;
+  }
+  .albums-intro .bg-slideshow img.active { opacity: 1; }
+  .albums-intro::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,16,10,0.45) 0%, rgba(20,16,10,0.65) 100%); }
+  .albums-intro .inner { position: relative; z-index: 1; max-width: 560px; padding: 0 24px; }
+  .albums-intro .section-label { color: var(--gold); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; font-size: 0.78rem; margin-bottom: 12px; }
+  .albums-intro h2 { font-size: clamp(2rem, 4vw, 2.8rem); margin: 0 0 14px; }
+  .albums-intro p { color: rgba(255,255,255,0.85); line-height: 1.7; }
+
+  /* ---- ALBUM SLIDES: real scene + pre-warped (true perspective) photo composites ---- */
+  .album-slide {
+    height: 100dvh; box-sizing: border-box; position: relative; overflow: hidden; background: #000;
+  }
+  .scene-wrap { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .scene-bg-blur { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(40px) brightness(0.7) saturate(1.1); transform: scale(1.15); }
+  .photo-layer { position: absolute; }
+  .scene-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+  /* each slideshow is already the FULL scene canvas size (pre-warped to the right
+     spot by Python), so it just stacks exactly on top of scene-bg -- no separate
+     positioning/clip-path needed, which removes a whole class of alignment bugs */
+  .slideshow { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .slideshow img { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1.4s ease; }
+  .slideshow img.active { opacity: 1; }
+
+  .on-image-title {
+    position: absolute; transform: translate(-50%, 0); text-align: center; color: #fff;
+    text-shadow: 0 2px 14px rgba(0,0,0,0.55); z-index: 5; width: 90%;
+  }
+  .on-image-title .plaque-tag { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 4px; color: var(--gold); }
+  .on-image-title h2 { font-size: clamp(1.3rem, 2.6vw, 2rem); margin: 0; }
+
+  @media (max-width: 760px) {
+    .on-image-title h2 { font-size: 1.15rem; }
+  }
+
+  .meet-section { height: 100dvh; box-sizing: border-box; display: flex; align-items: center; overflow: hidden; padding: calc(var(--nav-h) + 16px) 24px 24px; background: var(--cream); }
+  .meet-inner { display: grid; grid-template-columns: 240px 1fr; gap: 36px; align-items: center; max-width: 940px; margin: 0 auto; }
+  .meet-photo { width: 100%; max-height: 46dvh; aspect-ratio: 1/1; border-radius: 50%; overflow: hidden; border: 6px solid #fff; box-shadow: 0 18px 40px rgba(43,38,33,0.18); }
+  .meet-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .meet-inner .section-label { color: var(--gold); font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.78rem; margin-bottom: 10px; }
+  .meet-inner h2 { font-size: clamp(1.4rem, 3vw, 2.2rem); margin: 0 0 12px; }
+  .meet-inner p { color: var(--ink-soft); line-height: 1.6; margin: 0 0 10px; font-size: 0.92rem; }
+  @media (max-width: 760px) {
+    .meet-section { overflow-y: auto; height: 100dvh; padding-bottom: 90px; }
+    .meet-inner { grid-template-columns: 1fr; text-align: center; }
+    .meet-photo { width: 150px; max-height: none; margin: 0 auto; }
+  }
+
+  .contact-section { min-height: 100dvh; box-sizing: border-box; display: flex; align-items: center; background: var(--ink); color: var(--cream); padding: 100px 0 150px; }
+  .contact-section .wrap { text-align: center; max-width: 560px; }
+  .contact-section .section-label { color: var(--gold); font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.78rem; margin-bottom: 12px; }
+  .contact-section h2 { font-size: clamp(1.8rem, 3vw, 2.3rem); margin: 0 0 16px; }
+  .contact-section p { color: rgba(250,245,234,0.75); line-height: 1.7; margin: 0 0 28px; }
+  .contact-section .cta.primary { background: var(--gold); color: var(--ink); }
+  .contact-details { margin-top: 30px; font-size: 0.92rem; color: rgba(250,245,234,0.8); line-height: 2; }
+  .contact-details a { color: var(--cream); text-decoration: underline; text-decoration-color: rgba(250,245,234,0.4); }
+
+  .ghost-bar{
+    position:fixed;inset-inline:0;bottom:0;z-index:600;
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    pointer-events:none;
+    background:linear-gradient(0deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 100%);
+    padding-top:40px;padding-bottom:max(env(safe-area-inset-bottom), .5rem);
+    color:#fff;
+  }
+  .ghost-bar .chevs{display:flex;width:100%;max-width:320px;align-items:center;justify-content:space-between;padding-inline:40px;}
+  .ghost-bar .chev-stack{display:flex;flex-direction:column;align-items:center;}
+  .ghost-bar .chev-stack.up{transform:rotate(180deg);}
+  .ghost-bar .chev{width:10px;height:10px;border-right:2px solid rgba(255,255,255,.85);border-bottom:2px solid rgba(255,255,255,.85);transform:rotate(45deg);}
+  .ghost-bar .chev:first-child{margin-bottom:-6px;}
+  .ghost-bar p{pointer-events:auto;font-size:.75rem;color:rgba(255,255,255,.85);margin:0;}
+  .ghost-bar a{color:inherit;text-decoration:underline;text-decoration-color:rgba(255,255,255,.5);text-underline-offset:2px;}
+  .ghost-bar a:hover{color:#fff;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#top"><img src="assets/owner/kb-logo.png" alt="KB Photography"></a>
+  <div class="nav-links">
+    <a href="#meet">Meet Your Photographer</a>
+    <a href="#albums-intro">Albums</a>
+    <a href="#contact">Book a Session</a>
+  </div>
+  <button class="nav-toggle" id="navToggle" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-drawer" id="navDrawer">
+  <a href="#meet">Meet Your Photographer</a>
+  <a href="#albums-intro">Albums</a>
+  <a href="#contact">Book a Session</a>
+</div>
+
+<section class="hero" id="top">
+  <div class="hero-photo">
+    <img src="assets/owner/kaylynn.jpg" alt="Kaylynn Thomas, KB Photography">
+  </div>
+  <div>
+    <h1>Hi, I&rsquo;m Kaylynn &mdash; the face, heart, and camera behind KB Photography.</h1>
+    <p>Based in Freeport, capturing warm, golden-hour moments across the Florida Panhandle &mdash; from candid family beach portraits to romantic engagement sessions along 30A.</p>
+    <div class="style-strip">
+      <figure><img src="assets/album-1-family-reunion/819088102_122113359015451480_5839750649866410113_n.jpg" alt="Family"><figcaption>Family</figcaption></figure>
+      <figure><img src="assets/album-2-the-proposal/797684833_122110933575451480_7108655423646406356_n.jpg" alt="Engagement"><figcaption>Engagement</figcaption></figure>
+      <figure><img src="assets/album-3-golden-hour-getaway/787945643_122105369763451480_5338609462511727302_n.jpg" alt="Golden Hour"><figcaption>Golden Hour</figcaption></figure>
+    </div>
+    <div class="cta-row">
+      <a class="cta primary" href="#contact">Book a Session</a>
+      <a class="cta secondary" href="#albums-intro">View Albums</a>
+    </div>
+  </div>
+</section>
+
+<section class="albums-intro" id="albums-intro">
+  <div class="bg-slideshow">
+      <img src="assets/album-1-family-reunion/819088102_122113359015451480_5839750649866410113_n.jpg" class="active" loading="lazy">
+      <img src="assets/album-2-the-proposal/797684833_122110933575451480_7108655423646406356_n.jpg" class="" loading="lazy">
+      <img src="assets/album-3-golden-hour-getaway/787945643_122105369763451480_5338609462511727302_n.jpg" class="" loading="lazy">
+      <img src="assets/album-4-little-ones/778958314_122099625261451480_4724982078963170509_n.jpg" class="" loading="lazy">
+      <img src="assets/album-5-field-and-film/777327786_122098246401451480_6075400341026326803_n.jpg" class="" loading="lazy">
+      <img src="assets/album-7-girls-trip/787945643_122105664345451480_8123523244715151164_n.jpg" class="" loading="lazy">
+      <img src="assets/album-8-golden-hour-moments/778984959_122101346175451480_9066227021113730493_n.jpg" class="" loading="lazy">
+  </div>
+  <div class="inner">
+    <div class="section-label">Portfolio</div>
+    <h2>Albums</h2>
+    <p>Every session tells its own story &mdash; scroll to step inside each one.</p>
+  </div>
+</section>
+
+
+    <section class="album-slide" id="family-reunion">
+      <div class="scene-wrap" data-scene-w="1588" data-scene-h="2380">
+        <img class="scene-bg-blur" src="assets/scenes_clean/family-reunion-triptych.webp" alt="" aria-hidden="true">
+        <img class="scene-bg" src="assets/scenes_clean/family-reunion-triptych.webp" alt="">
+        <div class="on-image-title" style="top: calc(6% + var(--nav-h) + 8px); left:50%;">
+          <div class="plaque-tag">FAMILY • 30A</div>
+          <h2>Family Reunion</h2>
+        </div>
+        <div class="photo-layer">
+        <div class="slideshow span-group" data-interval="4200" data-group="family-reunion">
+          <img src="assets/warped/family-reunion/slot0_0.png" alt="" loading="lazy" class="active">
+          <img src="assets/warped/family-reunion/slot0_1.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/family-reunion/slot0_2.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/family-reunion/slot0_3.png" alt="" loading="lazy" class="">
+        </div>
+        <div class="slideshow span-group" data-interval="4600" data-group="family-reunion">
+          <img src="assets/warped/family-reunion/slot1_0.png" alt="" loading="lazy" class="active">
+          <img src="assets/warped/family-reunion/slot1_1.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/family-reunion/slot1_2.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/family-reunion/slot1_3.png" alt="" loading="lazy" class="">
+        </div>
+        <div class="slideshow span-group" data-interval="5000" data-group="family-reunion">
+          <img src="assets/warped/family-reunion/slot2_0.png" alt="" loading="lazy" class="active">
+          <img src="assets/warped/family-reunion/slot2_1.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/family-reunion/slot2_2.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/family-reunion/slot2_3.png" alt="" loading="lazy" class="">
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="album-slide" id="the-proposal">
+      <div class="scene-wrap" data-scene-w="533" data-scene-h="652">
+        <img class="scene-bg-blur" src="assets/scenes_clean/the-proposal.jpg" alt="" aria-hidden="true">
+        <img class="scene-bg" src="assets/scenes_clean/the-proposal.jpg" alt="">
+        <div class="on-image-title" style="top: calc(4% + var(--nav-h) + 8px); left:50%;">
+          <div class="plaque-tag">ENGAGEMENT • BEACH</div>
+          <h2>The Proposal</h2>
+        </div>
+        <div class="photo-layer">
+        <div class="slideshow" data-interval="4200">
+          <img src="assets/warped/the-proposal/slot0_0.png" alt="" loading="lazy" class="active">
+          <img src="assets/warped/the-proposal/slot0_1.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/the-proposal/slot0_2.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/the-proposal/slot0_3.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/the-proposal/slot0_4.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/the-proposal/slot0_5.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/the-proposal/slot0_6.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/the-proposal/slot0_7.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/the-proposal/slot0_8.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/the-proposal/slot0_9.png" alt="" loading="lazy" class="">
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="album-slide" id="golden-hour-getaway">
+      <div class="scene-wrap" data-scene-w="1588" data-scene-h="1271">
+        <img class="scene-bg-blur" src="assets/scenes_clean/golden-hour-getaway.webp" alt="" aria-hidden="true">
+        <img class="scene-bg" src="assets/scenes_clean/golden-hour-getaway.webp" alt="">
+        <div class="on-image-title" style="top: calc(4% + var(--nav-h) + 8px); left:50%;">
+          <div class="plaque-tag">FRIENDS • RESORT</div>
+          <h2>Golden Hour Getaway</h2>
+        </div>
+        <div class="photo-layer">
+        <div class="slideshow" data-interval="4200">
+          <img src="assets/warped/golden-hour-getaway/slot0_0.png" alt="" loading="lazy" class="active">
+          <img src="assets/warped/golden-hour-getaway/slot0_1.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-getaway/slot0_2.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-getaway/slot0_3.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-getaway/slot0_4.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-getaway/slot0_5.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-getaway/slot0_6.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-getaway/slot0_7.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-getaway/slot0_8.png" alt="" loading="lazy" class="">
+        </div>
+        <div class="slideshow" data-interval="4600">
+          <img src="assets/warped/golden-hour-getaway/slot1_0.png" alt="" loading="lazy" class="active">
+          <img src="assets/warped/golden-hour-getaway/slot1_1.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-getaway/slot1_2.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-getaway/slot1_3.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-getaway/slot1_4.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-getaway/slot1_5.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-getaway/slot1_6.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-getaway/slot1_7.png" alt="" loading="lazy" class="">
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="album-slide" id="little-ones">
+      <div class="scene-wrap" data-scene-w="2255" data-scene-h="1809">
+        <img class="scene-bg-blur" src="assets/scenes_clean/little-ones.webp" alt="" aria-hidden="true">
+        <img class="scene-bg" src="assets/scenes_clean/little-ones.webp" alt="">
+        <div class="on-image-title" style="top: calc(4% + var(--nav-h) + 8px); left:50%;">
+          <div class="plaque-tag">NEWBORN • SIBLINGS</div>
+          <h2>Little Ones</h2>
+        </div>
+        <div class="photo-layer">
+        <div class="slideshow" data-interval="4200">
+          <img src="assets/warped/little-ones/slot0_0.png" alt="" loading="lazy" class="active">
+          <img src="assets/warped/little-ones/slot0_1.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/little-ones/slot0_2.png" alt="" loading="lazy" class="">
+        </div>
+        <div class="slideshow" data-interval="4600">
+          <img src="assets/warped/little-ones/slot1_0.png" alt="" loading="lazy" class="active">
+          <img src="assets/warped/little-ones/slot1_1.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/little-ones/slot1_2.png" alt="" loading="lazy" class="">
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="album-slide" id="field-and-film">
+      <div class="scene-wrap" data-scene-w="1800" data-scene-h="1200">
+        <img class="scene-bg-blur" src="assets/scenes_clean/field-and-film.jpg" alt="" aria-hidden="true">
+        <img class="scene-bg" src="assets/scenes_clean/field-and-film.jpg" alt="">
+        <div class="on-image-title" style="top: calc(3% + var(--nav-h) + 8px); left:50%;">
+          <div class="plaque-tag">COUPLES • BLACK &amp; WHITE</div>
+          <h2>Field &amp; Film</h2>
+        </div>
+        <div class="photo-layer">
+        <div class="slideshow" data-interval="4200">
+          <img src="assets/warped/field-and-film/slot0_0.png" alt="" loading="lazy" class="active">
+          <img src="assets/warped/field-and-film/slot0_1.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/field-and-film/slot0_2.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/field-and-film/slot0_3.png" alt="" loading="lazy" class="">
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="album-slide" id="girls-trip">
+      <div class="scene-wrap" data-scene-w="1200" data-scene-h="1881">
+        <img class="scene-bg-blur" src="assets/scenes_clean/girls-trip.webp" alt="" aria-hidden="true">
+        <img class="scene-bg" src="assets/scenes_clean/girls-trip.webp" alt="">
+        <div class="on-image-title" style="top: calc(3% + var(--nav-h) + 8px); left:50%;">
+          <div class="plaque-tag">FRIENDS • 30A</div>
+          <h2>Girls' Trip</h2>
+        </div>
+        <div class="photo-layer">
+        <div class="slideshow" data-interval="4200">
+          <img src="assets/warped/girls-trip/slot0_0.png" alt="" loading="lazy" class="active">
+        </div>
+        <div class="slideshow" data-interval="4600">
+          <img src="assets/warped/girls-trip/slot1_0.png" alt="" loading="lazy" class="active">
+        </div>
+        <div class="slideshow" data-interval="5000">
+          <img src="assets/warped/girls-trip/slot2_0.png" alt="" loading="lazy" class="active">
+        </div>
+        <div class="slideshow" data-interval="5400">
+          <img src="assets/warped/girls-trip/slot3_0.png" alt="" loading="lazy" class="active">
+        </div>
+        <div class="slideshow" data-interval="5800">
+          <img src="assets/warped/girls-trip/slot4_0.png" alt="" loading="lazy" class="active">
+        </div>
+        <div class="slideshow" data-interval="6200">
+          <img src="assets/warped/girls-trip/slot5_0.png" alt="" loading="lazy" class="active">
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="album-slide" id="golden-hour-moments">
+      <div class="scene-wrap" data-scene-w="1588" data-scene-h="1588">
+        <img class="scene-bg-blur" src="assets/scenes_clean/golden-hour-moments.webp" alt="" aria-hidden="true">
+        <img class="scene-bg" src="assets/scenes_clean/golden-hour-moments.webp" alt="">
+        <div class="on-image-title" style="top: calc(4% + var(--nav-h) + 8px); left:50%;">
+          <div class="plaque-tag">PORTRAITS • GULF COAST</div>
+          <h2>Golden Hour Moments</h2>
+        </div>
+        <div class="photo-layer">
+        <div class="slideshow" data-interval="4200">
+          <img src="assets/warped/golden-hour-moments/slot0_0.png" alt="" loading="lazy" class="active">
+          <img src="assets/warped/golden-hour-moments/slot0_1.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-moments/slot0_2.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-moments/slot0_3.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/golden-hour-moments/slot0_4.png" alt="" loading="lazy" class="">
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="album-slide" id="puppy-love">
+      <div class="scene-wrap" data-scene-w="1588" data-scene-h="1057">
+        <img class="scene-bg-blur" src="assets/scenes_clean/puppy-love.webp" alt="" aria-hidden="true">
+        <img class="scene-bg" src="assets/scenes_clean/puppy-love.webp" alt="">
+        <div class="on-image-title" style="top: calc(3% + var(--nav-h) + 8px); left:50%;">
+          <div class="plaque-tag">COUPLES • PORTRAITS</div>
+          <h2>Puppy Love</h2>
+        </div>
+        <div class="photo-layer">
+        <div class="slideshow" data-interval="4200">
+          <img src="assets/warped/puppy-love/slot0_0.png" alt="" loading="lazy" class="active">
+          <img src="assets/warped/puppy-love/slot0_1.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/puppy-love/slot0_2.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/puppy-love/slot0_3.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/puppy-love/slot0_4.png" alt="" loading="lazy" class="">
+          <img src="assets/warped/puppy-love/slot0_5.png" alt="" loading="lazy" class="">
+        </div>
+        </div>
+      </div>
+    </section>
+
+<section class="meet-section" id="meet">
+  <div class="meet-inner">
+    <div class="meet-photo">
+      <img src="assets/owner/kaylynn.jpg" alt="Kaylynn Thomas, KB Photography">
+    </div>
+    <div>
+      <div class="section-label">Meet Your Photographer</div>
+      <h2>Hi! I&rsquo;m Kaylynn Thomas, the face, heart, and camera behind KB Photography.</h2>
+      <p>Photography, for me, is about so much more than capturing images &mdash; it's about telling the stories behind life's simplest, most meaningful moments.</p>
+      <p>As a mother to a one year old, I know first hand how fast time flies and how precious those everyday moments really are. Through my lens, I strive to preserve the beauty in everyday life and create lasting memories that inspire and connect us all.</p>
+      <p>Whether it's a family gathering on the beach, a milestone celebration, or a quiet moment worth remembering, I'd love the opportunity to capture it for you. Welcome to KB Photography &mdash; I can't wait to connect with you!</p>
+    </div>
+  </div>
+</section>
+
+<section class="contact-section" id="contact">
+  <div class="wrap">
+    <div class="section-label">Get In Touch</div>
+    <h2>Let's Capture Your Moment</h2>
+    <p>Based in Freeport, FL &mdash; serving the Florida Panhandle including Panama City Beach, Destin, and Seaside. Reach out to check availability and book your session.</p>
+    <a class="cta primary" href="mailto:kb.photographyandfilms@gmail.com">Email KB Photography</a>
+    <div class="contact-details">
+      <div><a href="tel:+17314879991">(731) 487-9991</a></div>
+      <div><a href="mailto:kb.photographyandfilms@gmail.com">kb.photographyandfilms@gmail.com</a></div>
+      <div>Freeport, FL &middot; Florida Panhandle Photographer</div>
+    </div>
+  </div>
+</section>
+
+<div class="ghost-bar">
+  <div class="chevs">
+    <span class="chev-stack"><span class="chev"></span><span class="chev"></span></span>
+    <span class="chev-stack up"><span class="chev"></span><span class="chev"></span></span>
+  </div>
+  <p>Draft preview &mdash; Powered by <a href="https://tektonbybigie.com" target="_blank" rel="noopener noreferrer">Tekton by Bigie</a></p>
+</div>
+
+<script>
+  var navToggle = document.getElementById('navToggle');
+  var navDrawer = document.getElementById('navDrawer');
+  navToggle.addEventListener('click', function() { navDrawer.classList.toggle('open'); });
+  navDrawer.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() { navDrawer.classList.remove('open'); });
+  });
+
+  (function() {
+    var imgs = document.querySelectorAll('.bg-slideshow img');
+    var i = 0;
+    setInterval(function() {
+      imgs[i].classList.remove('active');
+      i = (i + 1) % imgs.length;
+      imgs[i].classList.add('active');
+    }, 3200);
+  })();
+
+  function layoutSceneLayers() {
+    document.querySelectorAll('.scene-wrap').forEach(function(wrap) {
+      var layer = wrap.querySelector('.photo-layer');
+      if (!layer) return;
+      var iw = parseFloat(wrap.getAttribute('data-scene-w'));
+      var ih = parseFloat(wrap.getAttribute('data-scene-h'));
+      var cw = wrap.clientWidth, ch = wrap.clientHeight;
+      if (!iw || !ih || !cw || !ch) return;
+      var scale = Math.min(cw / iw, ch / ih);
+      var rw = iw * scale, rh = ih * scale;
+      layer.style.left = ((cw - rw) / 2) + 'px';
+      layer.style.top = ((ch - rh) / 2) + 'px';
+      layer.style.width = rw + 'px';
+      layer.style.height = rh + 'px';
+    });
+  }
+  window.addEventListener('load', layoutSceneLayers);
+  window.addEventListener('resize', layoutSceneLayers);
+  layoutSceneLayers();
+  setTimeout(layoutSceneLayers, 300);
+
+  document.querySelectorAll('.slideshow:not(.span-group)').forEach(function(box) {
+    var imgs = box.querySelectorAll('img');
+    if (imgs.length < 2) return;
+    var i = 0;
+    var interval = parseInt(box.getAttribute('data-interval'), 10) || 4000;
+    setInterval(function() {
+      imgs[i].classList.remove('active');
+      i = (i + 1) % imgs.length;
+      imgs[i].classList.add('active');
+    }, interval);
+  });
+
+  (function() {
+    var groups = {};
+    document.querySelectorAll('.slideshow.span-group').forEach(function(box) {
+      var g = box.getAttribute('data-group') || 'default';
+      (groups[g] = groups[g] || []).push(box);
+    });
+    Object.keys(groups).forEach(function(g) {
+      var boxes = groups[g];
+      var imgSets = boxes.map(function(b) { return b.querySelectorAll('img'); });
+      var count = imgSets[0] ? imgSets[0].length : 0;
+      if (count < 2) return;
+      var i = 0;
+      var interval = parseInt(boxes[0].getAttribute('data-interval'), 10) || 4500;
+      setInterval(function() {
+        imgSets.forEach(function(imgs) { imgs[i].classList.remove('active'); });
+        i = (i + 1) % count;
+        imgSets.forEach(function(imgs) { imgs[i].classList.add('active'); });
+      }, interval);
+    });
+  })();
+</script>
+
+</body>
+</html>
