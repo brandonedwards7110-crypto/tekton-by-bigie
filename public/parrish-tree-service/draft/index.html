@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parrish Tree Service — Daleville, AL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #2f8f57; --gold: #f2c230; --cream: #faf6ea; --ink-soft: #d9e3da;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #fff; -webkit-font-smoothing: antialiased;
+    background: #0c1c12 url("assets/hero-tree-trim.jpg") center/cover no-repeat fixed;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background: linear-gradient(180deg, rgba(6,16,10,0.55) 0%, rgba(6,16,10,0.8) 100%);
+    z-index: 0; pointer-events: none;
+  }
+  h1, h2, .brand { font-family: "Oswald", sans-serif; text-transform: uppercase; letter-spacing: 0.02em; }
+  a { color: inherit; }
+  .wrap { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 0 20px; }
+
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 20px;
+  }
+  .brand { font-size: 1.15rem; font-weight: 700; }
+  nav a.photos-link {
+    font-size: 0.88rem; font-weight: 600; text-decoration: none;
+    border: 1.5px solid rgba(255,255,255,0.55); padding: 8px 16px; border-radius: 999px;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  nav a.photos-link:hover { border-color: var(--gold); background: rgba(242,194,48,0.12); }
+
+  .hero { text-align: center; padding: 60px 0 40px; }
+  .hero h1 { font-size: clamp(2rem, 7vw, 3rem); margin: 0 0 14px; line-height: 1.08; }
+  .hero p { color: var(--ink-soft); font-size: 1.05rem; max-width: 46ch; margin: 0 auto 26px; line-height: 1.6; }
+  .cta {
+    display: inline-block; padding: 15px 28px; border-radius: 4px; font-weight: 700;
+    text-decoration: none; font-size: 1rem; background: var(--gold); color: #17250f;
+  }
+
+  .panel {
+    background: rgba(8,20,12,0.62); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px; padding: 32px 26px; margin-bottom: 28px;
+    backdrop-filter: blur(2px);
+  }
+  .section-label { color: var(--gold); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.76rem; margin: 0 0 8px; }
+  .panel h2 { font-size: 1.5rem; margin: 0 0 20px; }
+
+  .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+  .service-item h3 { margin: 0 0 6px; font-size: 1rem; font-family: "Oswald", sans-serif; text-transform: none; }
+  .service-item p { margin: 0; color: var(--ink-soft); font-size: 0.88rem; line-height: 1.55; }
+
+  .panel p.body-text { color: var(--ink-soft); line-height: 1.75; }
+  .area-list { columns: 2; column-gap: 24px; padding-left: 18px; color: var(--ink-soft); line-height: 1.9; margin: 0; }
+
+  form { display: grid; gap: 14px; }
+  form label { font-size: 0.82rem; color: var(--ink-soft); display: block; margin-bottom: 5px; }
+  form input, form select, form textarea {
+    width: 100%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 6px; padding: 11px 12px; color: #fff; font-family: inherit; font-size: 0.95rem;
+  }
+  form input::placeholder, form textarea::placeholder { color: rgba(255,255,255,0.4); }
+  form textarea { resize: vertical; min-height: 90px; }
+  form button {
+    justify-self: start; background: var(--gold); color: #17250f; border: none;
+    padding: 13px 30px; border-radius: 4px; font-weight: 700; font-size: 0.98rem; cursor: pointer;
+  }
+  .form-note { font-size: 0.78rem; color: rgba(255,255,255,0.55); margin-top: 4px; }
+
+  footer { text-align: center; padding: 40px 20px 50px; color: var(--ink-soft); }
+  footer .phone-big { color: var(--gold); font-size: 1.4rem; font-weight: 700; text-decoration: none; display: inline-block; margin: 6px 0 14px; }
+  footer .bigie-credit { font-size: 0.82rem; margin-top: 22px; }
+  footer .bigie-credit a { color: var(--gold); text-decoration: none; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <div class="brand">Parrish Tree Service</div>
+    <a class="photos-link" href="photos.html">Photos</a>
+  </nav>
+
+  <div class="hero">
+    <h1>Tree, Land &amp; Storm Cleanup<br>Done Right the First Time</h1>
+    <p>Serving Daleville, Enterprise, Dothan, Ozark and the surrounding Wiregrass since 1994. Licensed, insured, free estimates.</p>
+    <a class="cta" href="tel:+13344066532">Call (334) 406-6532</a>
+  </div>
+
+  <div class="panel">
+    <div class="section-label">What We Do</div>
+    <h2>Tree, Lawn &amp; Earthwork</h2>
+    <div class="services-grid">
+      <div class="service-item">
+        <h3>Tree Removal &amp; Trimming</h3>
+        <p>Full removal, trimming, and large/hazardous tree takedowns, including bucket truck work.</p>
+      </div>
+      <div class="service-item">
+        <h3>Stump Removal &amp; Brush Cutting</h3>
+        <p>Stump grinding and brush clearing to finish the job, not just drop the tree and leave.</p>
+      </div>
+      <div class="service-item">
+        <h3>Land Clearing &amp; Bulldozer Work</h3>
+        <p>Residential and commercial land clearing and earthwork for larger lots and job sites.</p>
+      </div>
+      <div class="service-item">
+        <h3>Lawn Maintenance</h3>
+        <p>Ongoing lawn upkeep plus fall and spring clean-up.</p>
+      </div>
+      <div class="service-item">
+        <h3>Storm Damage Cleanup</h3>
+        <p>Fast response for storm-damaged trees and limbs.</p>
+      </div>
+      <div class="service-item">
+        <h3>Land Mulching</h3>
+        <p>Mulching to finish out a cleared or wooded lot.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="section-label">About</div>
+    <h2>Family-Run Since 1994</h2>
+    <p class="body-text">Parrish Tree Service has been cutting, clearing, and cleaning up properties across the Wiregrass for over 30 years — licensed, insured, and built on word-of-mouth in the community.</p>
+    <ul class="area-list">
+      <li>Daleville, AL</li>
+      <li>Enterprise, AL</li>
+      <li>Dothan, AL</li>
+      <li>Ozark, AL</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <div class="section-label">Get an Estimate</div>
+    <h2>Request an Appointment</h2>
+    <form onsubmit="return false;">
+      <div>
+        <label for="name">Name</label>
+        <input id="name" type="text" placeholder="Your name">
+      </div>
+      <div>
+        <label for="phone">Phone</label>
+        <input id="phone" type="tel" placeholder="(334) 555-0100">
+      </div>
+      <div>
+        <label for="service">Service Needed</label>
+        <select id="service">
+          <option>Tree Removal / Trimming</option>
+          <option>Stump Removal / Brush Cutting</option>
+          <option>Land Clearing / Bulldozer Work</option>
+          <option>Lawn Maintenance</option>
+          <option>Storm Damage Cleanup</option>
+          <option>Land Mulching</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div>
+        <label for="message">Tell us about the job</label>
+        <textarea id="message" placeholder="Location, what you need done, etc."></textarea>
+      </div>
+      <button type="submit">Request Appointment</button>
+      <div class="form-note">Draft form — not yet wired to send anywhere. Requests will go straight to Scott once that's connected.</div>
+    </form>
+  </div>
+
+  <footer>
+    <div class="brand">Parrish Tree Service</div>
+    <a class="phone-big" href="tel:+13344066532">(334) 406-6532</a>
+    <div>Daleville, AL &middot; Free Estimates &middot; Licensed &amp; Insured</div>
+    <div class="bigie-credit">Powered by <a href="https://bigie.us" target="_blank" rel="noopener">Bigie</a></div>
+  </footer>
+</div>
+
+</body>
+</html>

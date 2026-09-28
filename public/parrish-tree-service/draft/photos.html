@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photos — Parrish Tree Service</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --green: #2f8f57; --gold: #f2c230; --ink-soft: #d9e3da; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #fff; background: #0c1c12; -webkit-font-smoothing: antialiased;
+  }
+  h1, .brand { font-family: "Oswald", sans-serif; text-transform: uppercase; letter-spacing: 0.02em; }
+  a { color: inherit; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 20px; }
+  .brand { font-size: 1.15rem; font-weight: 700; }
+  nav a.back-link {
+    font-size: 0.88rem; font-weight: 600; text-decoration: none;
+    border: 1.5px solid rgba(255,255,255,0.55); padding: 8px 16px; border-radius: 999px;
+  }
+  nav a.back-link:hover { border-color: var(--gold); background: rgba(242,194,48,0.12); }
+
+  h1 { text-align: center; font-size: clamp(1.8rem, 5vw, 2.4rem); margin: 10px 0 8px; }
+  .sub { text-align: center; color: var(--ink-soft); margin: 0 auto 40px; max-width: 50ch; line-height: 1.6; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+  .placeholder {
+    aspect-ratio: 4 / 3; border-radius: 10px; border: 1.5px dashed rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    color: rgba(255,255,255,0.45); font-size: 0.85rem; padding: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <div class="brand">Parrish Tree Service</div>
+    <a class="back-link" href="index.html">&larr; Back</a>
+  </nav>
+
+  <h1>Job Photos</h1>
+  <p class="sub">Real job photos go here — pulled from Facebook or provided directly. Placeholders below, ready to swap in.</p>
+
+  <div class="grid">
+    <div class="placeholder">Photo 1</div>
+    <div class="placeholder">Photo 2</div>
+    <div class="placeholder">Photo 3</div>
+    <div class="placeholder">Photo 4</div>
+    <div class="placeholder">Photo 5</div>
+    <div class="placeholder">Photo 6</div>
+  </div>
+</div>
+
+</body>
+</html>

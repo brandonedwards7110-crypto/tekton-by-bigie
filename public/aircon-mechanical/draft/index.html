@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AirCon Mechanical, LLC — Commercial HVAC Construction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0b1220;
+    --navy:#12213a;
+    --navy-2:#182b48;
+    --white:#f6f7f9;
+    --orange:#ff6a13;
+    --orange-dark:#d9550a;
+    --muted:#a9b3c2;
+    --line:rgba(255,255,255,.14);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--white);
+    font-family:'Inter',system-ui,sans-serif;
+    position:relative;
+    isolation:isolate;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    margin:0;
+  }
+  a{color:inherit;}
+  img{display:block;width:100%;height:100%;object-fit:cover;}
+
+  /* ---- top bar ---- */
+  .topbar{
+    position:fixed;top:0;left:0;right:0;z-index:500;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 5vw;
+    pointer-events:none;
+    mix-blend-mode:normal;
+    background:linear-gradient(180deg, rgba(6,10,18,.75) 0%, rgba(6,10,18,0) 100%);
+  }
+  .topbar *{pointer-events:auto;}
+  .brandmark{font-family:'Oswald',sans-serif;font-weight:700;font-size:1.15rem;letter-spacing:.06em;text-shadow:0 2px 10px rgba(0,0,0,.6);}
+  .topbar .phone{
+    background:var(--orange);color:var(--ink);font-weight:600;
+    padding:9px 16px;border-radius:2px;text-decoration:none;font-size:.9rem;
+    box-shadow:0 4px 16px rgba(0,0,0,.35);
+  }
+
+  /* ---- generic slideshow ---- */
+  .slideshow{position:absolute;inset:0;overflow:hidden;background:#000;}
+  .slide{position:absolute;inset:0;opacity:0;transition:opacity 1.4s ease;}
+  .slide.active{opacity:1;}
+  .slide img{filter:saturate(1.05) contrast(1.05);}
+  .ph-slide{
+    display:flex;align-items:center;justify-content:center;
+    background:
+      repeating-linear-gradient(45deg, rgba(255,255,255,.05) 0 12px, rgba(255,255,255,.09) 12px 24px),
+      var(--navy);
+    border:2px dashed rgba(255,255,255,.28);
+  }
+  .ph-slide span{
+    font-family:'Oswald',sans-serif;letter-spacing:.08em;text-transform:uppercase;
+    color:rgba(255,255,255,.55);font-size:clamp(1rem,2.4vw,1.6rem);text-align:center;padding:0 20px;
+  }
+  .scrim{position:absolute;inset:0;background:linear-gradient(180deg, rgba(6,10,18,.15) 0%, rgba(6,10,18,.35) 55%, rgba(6,10,18,.85) 100%);}
+  .scrim.strong{background:linear-gradient(180deg, rgba(6,10,18,.45) 0%, rgba(6,10,18,.55) 40%, rgba(6,10,18,.92) 100%);}
+
+  /* ---- hero ---- */
+  .hero{position:relative;height:100vh;overflow:hidden;}
+  .hero-content{
+    position:relative;z-index:2;height:100%;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    padding:0 6vw;
+  }
+  .hero-icon{width:64px;height:64px;margin-bottom:22px;opacity:.95;}
+  .hero-content h1{font-size:clamp(2.4rem,7vw,5rem);line-height:1;text-shadow:0 6px 30px rgba(0,0,0,.5);}
+  .hero-content p{margin-top:16px;color:var(--muted);font-size:clamp(.95rem,1.6vw,1.2rem);max-width:520px;}
+  .hero-tag{margin-top:26px;color:var(--orange);font-family:'Oswald',sans-serif;letter-spacing:.16em;font-size:.85rem;text-transform:uppercase;}
+  /* ---- persistent ghost bottom bar (standing Bigie build spec, ref: carriders.org) ---- */
+  .ghost-bar{
+    position:fixed;inset-inline:0;bottom:0;z-index:600;
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    pointer-events:none;
+    background:linear-gradient(0deg, rgba(0,0,0,.5) 0%, rgba(0,0,0,0) 100%);
+    padding-top:40px;padding-bottom:max(env(safe-area-inset-bottom), .5rem);
+    color:#fff;
+  }
+  .ghost-bar .chevs{display:flex;width:100%;max-width:320px;align-items:center;justify-content:space-between;padding-inline:40px;}
+  .ghost-bar .chev-stack{display:flex;flex-direction:column;align-items:center;}
+  .ghost-bar .chev-stack.up{transform:rotate(180deg);}
+  .ghost-bar .chev{width:10px;height:10px;border-right:2px solid rgba(255,255,255,.85);border-bottom:2px solid rgba(255,255,255,.85);transform:rotate(45deg);}
+  .ghost-bar .chev:first-child{margin-bottom:-6px;}
+  .ghost-bar p{pointer-events:auto;font-size:.75rem;color:rgba(255,255,255,.85);margin:0;}
+  .ghost-bar a{color:inherit;text-decoration:underline;text-decoration-color:rgba(255,255,255,.5);text-underline-offset:2px;}
+  .ghost-bar a:hover{color:#fff;}
+
+  /* ---- icon cover transition ---- */
+  .icon-wrap{position:relative;height:220vh;}
+  .icon-inner{position:sticky;top:0;height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;background:transparent;}
+  .icon-badge{
+    width:90px;height:90px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--orange);
+    transform:scale(calc(1 + var(--p,0) * 46));
+    will-change:transform,opacity;
+    opacity:calc(1 - max(0, var(--p,0) - .74) / .26);
+  }
+  .icon-badge svg{width:56%;height:56%;}
+
+  /* ---- pinned project sections ---- */
+  .pin-wrap{position:relative;}
+  .pin-wrap.h2{height:260vh;}
+  .pin-wrap.h3{height:300vh;}
+  .pin-inner{position:sticky;top:0;height:100vh;overflow:hidden;}
+  .project-label{
+    position:absolute;left:0;right:0;bottom:0;z-index:3;
+    padding:64px 6vw 54px;
+  }
+  .project-eyebrow{color:var(--orange);font-family:'Oswald',sans-serif;letter-spacing:.18em;font-size:.78rem;text-transform:uppercase;margin-bottom:10px;}
+  .project-label h2{font-size:clamp(1.8rem,5vw,3.4rem);}
+  .project-label p{color:var(--muted);margin-top:10px;max-width:640px;font-size:.98rem;}
+
+  /* ---- solid cover sections ---- */
+  .cover-section{position:relative;z-index:4;background:var(--ink);padding:110px 6vw;}
+  .cover-section.navy{background:var(--navy);}
+  .cover-inner{max-width:920px;margin:0 auto;}
+  .eyebrow{color:var(--orange);font-family:'Oswald',sans-serif;letter-spacing:.18em;font-size:.8rem;text-transform:uppercase;margin-bottom:16px;}
+  .cover-section h2{font-size:clamp(2rem,4.5vw,3rem);margin-bottom:22px;}
+  .cover-section p{color:var(--muted);font-size:1.05rem;line-height:1.7;max-width:680px;}
+  .fact-row{display:flex;flex-wrap:wrap;gap:36px;margin-top:44px;}
+  .fact{min-width:140px;}
+  .fact .num{font-family:'Oswald',sans-serif;font-size:2.2rem;color:var(--orange);}
+  .fact .lbl{color:var(--muted);font-size:.85rem;letter-spacing:.04em;text-transform:uppercase;margin-top:4px;}
+
+  /* ---- staff grid ---- */
+  .staff-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:22px;margin-top:46px;}
+  .staff-card{background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.22);border-radius:4px;overflow:hidden;}
+  .staff-photo{
+    aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;
+    background:repeating-linear-gradient(45deg, rgba(255,255,255,.04) 0 12px, rgba(255,255,255,.08) 12px 24px);
+    color:rgba(255,255,255,.5);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.06em;font-size:.85rem;text-align:center;padding:10px;
+  }
+  .staff-card .info{padding:14px 14px 16px;}
+  .staff-card .info .name{font-family:'Oswald',sans-serif;letter-spacing:.04em;color:rgba(255,255,255,.65);font-size:.95rem;}
+  .staff-card .info .role{color:var(--muted);font-size:.8rem;margin-top:2px;}
+
+  /* ---- project list ---- */
+  .list-section{background:var(--white);color:var(--ink);position:relative;z-index:5;padding:110px 6vw 90px;}
+  .list-section .eyebrow{color:var(--orange-dark);}
+  .list-section h2{color:var(--ink);}
+  .project-list{margin-top:40px;border-top:1px solid rgba(0,0,0,.12);}
+  .project-item{
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+    padding:26px 4px;border-bottom:1px solid rgba(0,0,0,.12);
+    cursor:pointer;background:none;border-left:none;border-right:none;border-top:none;width:100%;text-align:left;
+    font-family:inherit;
+  }
+  .project-item:hover .pi-name{color:var(--orange-dark);}
+  .pi-name{font-family:'Oswald',sans-serif;font-size:clamp(1.2rem,2.6vw,1.8rem);text-transform:uppercase;transition:color .2s;}
+  .pi-meta{color:#5b6472;font-size:.85rem;white-space:nowrap;}
+  .also-row{margin-top:50px;display:flex;flex-wrap:wrap;gap:16px;}
+  .also-chip{
+    display:flex;align-items:center;gap:12px;background:#fff;border:1px solid rgba(0,0,0,.12);
+    border-radius:4px;padding:10px 16px 10px 10px;
+  }
+  .also-chip img{width:52px;height:52px;object-fit:cover;border-radius:2px;}
+  .also-chip .t{font-family:'Oswald',sans-serif;font-size:.85rem;text-transform:uppercase;letter-spacing:.02em;}
+  .also-label{color:#5b6472;font-size:.85rem;margin-bottom:2px;letter-spacing:.04em;text-transform:uppercase;}
+
+  /* ---- contact ---- */
+  .contact-section{background:var(--navy);position:relative;z-index:6;padding:110px 6vw 60px;}
+  .contact-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:60px;max-width:1080px;margin:0 auto;}
+  @media (max-width:800px){.contact-grid{grid-template-columns:1fr;}}
+  .contact-cta{
+    display:inline-block;margin-top:28px;background:var(--orange);color:var(--ink);
+    font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.05em;
+    padding:16px 30px;border-radius:2px;text-decoration:none;font-weight:600;
+  }
+  .contact-fact{margin-top:26px;color:var(--muted);font-size:.95rem;line-height:1.8;}
+  .map-ph{
+    aspect-ratio:4/3;border:2px dashed rgba(255,255,255,.28);border-radius:4px;
+    display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;
+    background:repeating-linear-gradient(45deg, rgba(255,255,255,.03) 0 14px, rgba(255,255,255,.07) 14px 28px);
+    color:rgba(255,255,255,.55);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.05em;
+  }
+
+  /* legacy footer rule removed — replaced by .ghost-bar (persistent, fixed) */
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brandmark">AIRCON MECHANICAL</div>
+    <a class="phone" href="tel:+13348873165">(334) 887-3165</a>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero" id="home">
+    <div class="slideshow" data-slideshow data-interval="4200">
+      <div class="slide active"><img src="assets/aircrane-1.jpg" alt=""></div>
+      <div class="slide"><img src="assets/aircrane-2.jpg" alt=""></div>
+      <div class="slide"><img src="assets/aircrane-3.jpg" alt=""></div>
+      <div class="slide ph-slide"><span>Insert Staff Photo Here</span></div>
+      <div class="slide ph-slide"><span>Insert Company Truck Photo Here</span></div>
+    </div>
+    <div class="scrim"></div>
+    <div class="hero-content">
+      <svg class="hero-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="48" fill="#ff6a13"/>
+        <g stroke="#0b1220" stroke-width="4" stroke-linecap="round">
+          <line x1="50" y1="18" x2="50" y2="50"/>
+          <line x1="50" y1="50" x2="72" y2="30"/>
+          <line x1="50" y1="50" x2="28" y2="30"/>
+          <line x1="44" y1="24" x2="56" y2="24"/>
+          <line x1="66" y1="24" x2="78" y2="36"/>
+          <line x1="22" y1="36" x2="34" y2="24"/>
+        </g>
+        <path d="M50 50c8 10 8 20 0 30-8-10-8-20 0-30Z" fill="#0b1220"/>
+      </svg>
+      <h1>AirCon&nbsp;Mechanical</h1>
+      <p>Commercial HVAC construction. Auburn &amp; Opelika, Alabama — family owned and operated since 1929.</p>
+      <div class="hero-tag">Licensed · Bonded · Insured</div>
+    </div>
+  </section>
+
+  <!-- ICON COVER TRANSITION -->
+  <div class="icon-wrap" data-icon-wrap>
+    <div class="icon-inner">
+      <div class="icon-badge" data-icon-badge>
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="#0b1220" stroke-width="4" stroke-linecap="round">
+            <line x1="50" y1="18" x2="50" y2="50"/>
+            <line x1="50" y1="50" x2="72" y2="30"/>
+            <line x1="50" y1="50" x2="28" y2="30"/>
+            <line x1="44" y1="24" x2="56" y2="24"/>
+            <line x1="66" y1="24" x2="78" y2="36"/>
+            <line x1="22" y1="36" x2="34" y2="24"/>
+          </g>
+          <path d="M50 50c8 10 8 20 0 30-8-10-8-20 0-30Z" fill="#0b1220"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECT 1 — LAKE WILMORE -->
+  <div class="pin-wrap h3" id="project-lake-wilmore">
+    <div class="pin-inner">
+      <div class="slideshow" data-slideshow data-interval="2600">
+        <div class="slide active"><img src="assets/lake-wilmore-1.webp" alt=""></div>
+        <div class="slide"><img src="assets/lake-wilmore-2.webp" alt=""></div>
+        <div class="slide"><img src="assets/lake-wilmore-3.jpg" alt=""></div>
+        <div class="slide"><img src="assets/lake-wilmore-4.jpg" alt=""></div>
+        <div class="slide"><img src="assets/lake-wilmore-5.jpg" alt=""></div>
+        <div class="slide"><img src="assets/lake-wilmore-6.jpg" alt=""></div>
+        <div class="slide"><img src="assets/lake-wilmore-7.jpg" alt=""></div>
+        <div class="slide"><img src="assets/lake-wilmore-8.jpg" alt=""></div>
+        <div class="slide"><img src="assets/lake-wilmore-9.jpg" alt=""></div>
+        <div class="slide"><img src="assets/lake-wilmore-10.jpg" alt=""></div>
+        <div class="slide"><img src="assets/lake-wilmore-11.jpg" alt=""></div>
+      </div>
+      <div class="scrim strong"></div>
+      <div class="project-label">
+        <div class="project-eyebrow">Project 01 · Auburn, AL</div>
+        <h2>Lake Wilmore Park<br>Pool Dehumidification</h2>
+        <p>A $970,900 mechanical contract with Whatley Construction to enclose and dehumidify the Lake Wilmore Park Recreation Center's indoor pool — protecting the structure year-round.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <section class="cover-section" id="about">
+    <div class="cover-inner">
+      <div class="eyebrow">About</div>
+      <h2>Nearly a century in the trade</h2>
+      <p>AirCon Mechanical, LLC has been Auburn &amp; Opelika family owned and operated since 1929. Today we focus on one thing: commercial HVAC construction — working alongside general contractors on schools, municipal buildings, retail, and recreation projects across the area.</p>
+      <div class="fact-row">
+        <div class="fact"><div class="num">1929</div><div class="lbl">Founded</div></div>
+        <div class="fact"><div class="num">100%</div><div class="lbl">Commercial</div></div>
+        <div class="fact"><div class="num">L·B·I</div><div class="lbl">Licensed · Bonded · Insured</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECT 2 — AIRCRANE HEAVY LIFT -->
+  <div class="pin-wrap h3" id="project-aircrane">
+    <div class="pin-inner">
+      <div class="slideshow" data-slideshow data-interval="2600">
+        <div class="slide active"><img src="assets/aircrane-1.jpg" alt=""></div>
+        <div class="slide"><img src="assets/aircrane-2.jpg" alt=""></div>
+        <div class="slide"><img src="assets/aircrane-3.jpg" alt=""></div>
+        <div class="slide ph-slide"><span>Photo 4</span></div>
+        <div class="slide ph-slide"><span>Photo 5</span></div>
+        <div class="slide ph-slide"><span>Photo 6</span></div>
+        <div class="slide ph-slide"><span>Photo 7</span></div>
+        <div class="slide ph-slide"><span>Photo 8</span></div>
+        <div class="slide ph-slide"><span>Photo 9</span></div>
+        <div class="slide ph-slide"><span>Photo 10</span></div>
+      </div>
+      <div class="scrim strong"></div>
+      <div class="project-label">
+        <div class="project-eyebrow">Project 02 · Job name TBD</div>
+        <h2>Heavy&#8209;Lift Equipment Placement</h2>
+        <p>An AirCrane heavy-lift helicopter sets rooftop mechanical equipment with our crew on the ground — no on-site crane required. <em>Working title — confirm real project name/date/location.</em></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAFF -->
+  <section class="cover-section navy" id="staff">
+    <div class="cover-inner">
+      <div class="eyebrow">Team</div>
+      <h2>Meet the staff</h2>
+      <p>Real names, roles, and photos go here — waiting on Brandon for staff content.</p>
+      <div class="staff-grid">
+        <div class="staff-card"><div class="staff-photo">Insert Staff Photo Here</div><div class="info"><div class="name">Name</div><div class="role">Title</div></div></div>
+        <div class="staff-card"><div class="staff-photo">Insert Staff Photo Here</div><div class="info"><div class="name">Name</div><div class="role">Title</div></div></div>
+        <div class="staff-card"><div class="staff-photo">Insert Staff Photo Here</div><div class="info"><div class="name">Name</div><div class="role">Title</div></div></div>
+        <div class="staff-card"><div class="staff-photo">Insert Staff Photo Here</div><div class="info"><div class="name">Name</div><div class="role">Title</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECT 3 — TRUE VALUE -->
+  <div class="pin-wrap h3" id="project-true-value">
+    <div class="pin-inner">
+      <div class="slideshow" data-slideshow data-interval="2600">
+        <div class="slide active"><img src="assets/true-value-1.jpg" alt=""></div>
+        <div class="slide"><img src="assets/true-value-2.jpg" alt=""></div>
+        <div class="slide"><img src="assets/true-value-3.jpg" alt=""></div>
+        <div class="slide"><img src="assets/true-value-4.jpg" alt=""></div>
+        <div class="slide ph-slide"><span>Photo 5</span></div>
+        <div class="slide ph-slide"><span>Photo 6</span></div>
+        <div class="slide ph-slide"><span>Photo 7</span></div>
+        <div class="slide ph-slide"><span>Photo 8</span></div>
+        <div class="slide ph-slide"><span>Photo 9</span></div>
+        <div class="slide ph-slide"><span>Photo 10</span></div>
+      </div>
+      <div class="scrim strong"></div>
+      <div class="project-label">
+        <div class="project-eyebrow">Project 03 · Opelika, AL</div>
+        <h2>True Value Hardware Store</h2>
+        <p>Mechanical build-out for the new Opelika True Value, alongside Whatley Construction.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROJECT LIST -->
+  <section class="list-section" id="projects">
+    <div class="eyebrow">Our Projects</div>
+    <h2>Every job, one call</h2>
+    <div class="project-list">
+      <button class="project-item" data-scroll-target="#project-lake-wilmore">
+        <span class="pi-name">Lake Wilmore Park — Pool Dehumidification</span>
+        <span class="pi-meta">Auburn, AL · w/ Whatley Construction</span>
+      </button>
+      <button class="project-item" data-scroll-target="#project-aircrane">
+        <span class="pi-name">Heavy&#8209;Lift Equipment Placement</span>
+        <span class="pi-meta">Job name TBD</span>
+      </button>
+      <button class="project-item" data-scroll-target="#project-true-value">
+        <span class="pi-name">True Value Hardware Store</span>
+        <span class="pi-meta">Opelika, AL · w/ Whatley Construction</span>
+      </button>
+    </div>
+    <div class="also-label">Also worked with Whatley Construction on</div>
+    <div class="also-row">
+      <div class="also-chip"><img src="assets/fire-station-5-1.jpg" alt=""><div class="t">Opelika Fire<br>Station #5</div></div>
+      <div class="also-chip"><img src="assets/public-works-1.jpg" alt=""><div class="t">Opelika<br>Public Works</div></div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact-section" id="contact">
+    <div class="contact-grid">
+      <div>
+        <div class="eyebrow">Contact</div>
+        <h2>Let's build something</h2>
+        <p style="color:var(--muted);max-width:480px;">Commercial HVAC construction leads start with a phone call, not a form.</p>
+        <a class="contact-cta" href="tel:+13348873165">Call (334) 887-3165</a>
+        <div class="contact-fact">
+          AirCon Mechanical, LLC<br>
+          Auburn / Opelika, AL<br>
+          Licensed · Bonded · Insured<br>
+          Family owned &amp; operated since 1929
+        </div>
+      </div>
+      <div class="map-ph">Insert Address &amp; Google Map Here</div>
+    </div>
+  </section>
+
+  <div class="ghost-bar">
+    <div class="chevs">
+      <span class="chev-stack"><span class="chev"></span><span class="chev"></span></span>
+      <span class="chev-stack up"><span class="chev"></span><span class="chev"></span></span>
+    </div>
+    <p>airconal.com — Powered by <a href="https://tektonbybigie.com" target="_blank" rel="noopener noreferrer">Tekton by Bigie</a></p>
+  </div>
+
+<script>
+  // generic crossfade slideshows
+  document.querySelectorAll('[data-slideshow]').forEach(function(box){
+    var slides = Array.from(box.children);
+    if(slides.length < 2) return;
+    var i = 0;
+    var interval = parseInt(box.dataset.interval || '3500', 10);
+    setInterval(function(){
+      slides[i].classList.remove('active');
+      i = (i + 1) % slides.length;
+      slides[i].classList.add('active');
+    }, interval);
+  });
+
+  // icon-cover scroll-linked scale
+  var iconWrap = document.querySelector('[data-icon-wrap]');
+  var iconBadge = document.querySelector('[data-icon-badge]');
+  function updateIcon(){
+    var rect = iconWrap.getBoundingClientRect();
+    var total = rect.height - window.innerHeight;
+    var scrolled = -rect.top;
+    var p = total > 0 ? Math.min(Math.max(scrolled / total, 0), 1) : 0;
+    iconBadge.style.setProperty('--p', p);
+  }
+  window.addEventListener('scroll', function(){ requestAnimationFrame(updateIcon); }, {passive:true});
+  window.addEventListener('resize', updateIcon);
+  updateIcon();
+
+  // project list smooth-scroll
+  document.querySelectorAll('[data-scroll-target]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var el = document.querySelector(btn.dataset.scrollTarget);
+      if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+</script>
+</body>
+</html>
