@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tekton by Bigie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;1,500&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --accent:#C97A3E;
+    --ink:#F5F3EE;
+    --panel:#121316;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--panel);color:var(--ink);font-family:'Space Grotesk',sans-serif;}
+  a{color:inherit;text-decoration:none;}
+
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:28px 5vw;box-sizing:border-box;
+  }
+  .nav-brand{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;letter-spacing:0.18em;color:#B9BAC0;text-transform:uppercase;}
+  .nav-back{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;color:#B9BAC0;text-transform:uppercase;}
+
+  .hero{
+    position:relative;min-height:100vh;overflow:hidden;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:140px 5vw 60px 5vw;box-sizing:border-box;
+  }
+  .hero-photo{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 38%;
+  }
+  .scrim-a{position:absolute;inset:0;background:linear-gradient(100deg, rgba(8,7,5,0.96) 0%, rgba(8,7,5,0.88) 26%, rgba(8,7,5,0.35) 52%, rgba(8,7,5,0.05) 75%, rgba(8,7,5,0.08) 100%);}
+  .scrim-b{position:absolute;inset:0;background:linear-gradient(180deg, rgba(0,0,0,0.55) 0%, transparent 18%, transparent 72%, rgba(10,9,7,0.98) 100%);}
+
+  .laser{position:absolute;left:0;top:45%;width:100%;height:2px;pointer-events:none;}
+
+  .hero-copy{position:relative;max-width:900px;}
+  .name-row{display:flex;flex-wrap:wrap;align-items:center;gap:clamp(14px,3vw,32px);}
+  .tekton-wrap{display:inline-block;}
+  h1{
+    margin:0;font-family:'Space Grotesk',sans-serif;font-weight:700;
+    font-size:clamp(3.4rem, 11vw, 8.4rem);line-height:0.92;letter-spacing:-0.015em;
+    background:linear-gradient(180deg,#F8F5EE 0%,#C9C2B0 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(3px 7px 16px rgba(0,0,0,0.6));
+  }
+  .the-builder{
+    text-align:center;margin-top:0.6em;
+    font-family:'Fraunces',serif;font-style:italic;font-weight:500;
+    font-size:clamp(1rem,2vw,1.5rem);color:var(--accent);
+  }
+  .by-bigie{
+    font-family:'IBM Plex Mono',monospace;font-weight:500;
+    font-size:clamp(1.4rem,4.2vw,2.9rem);letter-spacing:0.08em;color:#D9D6CC;text-transform:uppercase;
+    text-shadow:0 3px 12px rgba(0,0,0,0.55);white-space:nowrap;
+  }
+  .divider{width:120px;height:2px;background:var(--accent);margin:clamp(24px,4vw,34px) 0 26px 0;}
+  .tagline{
+    margin:0;font-family:'Space Grotesk',sans-serif;font-weight:400;
+    font-size:clamp(1rem,1.6vw,1.2rem);line-height:1.55;color:#E2E0D8;max-width:560px;
+    text-shadow:0 2px 10px rgba(0,0,0,0.6);
+  }
+
+  .roster{
+    position:relative;padding:0 5vw 80px 5vw;box-sizing:border-box;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;
+  }
+  .card{
+    background:linear-gradient(180deg,#1D1F23 0%,#17191C 100%);border:1px solid #2C2E33;border-radius:6px;
+    padding:22px 22px 20px 22px;position:relative;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,0.35);
+  }
+  .card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--badge,var(--accent));}
+  .card-name{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:1.1rem;color:var(--ink);}
+  .card-meta{font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:#8B8D94;margin-top:6px;}
+  .card-status{
+    display:inline-block;margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;
+    letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:3px;
+    border:1px solid var(--badge,var(--accent));color:var(--badge,var(--accent));
+  }
+
+  footer{padding:30px 5vw 90px 5vw;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:#55585F;line-height:1.7;}
+  footer a{color:#8B8D94;text-decoration:underline;}
+
+  /* persistent "powered by" ghost bottom bar — standing spec, ported from carriders.org */
+  .ghost-bar{
+    position:fixed;inset-inline:0;bottom:0;z-index:50;
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    padding:40px 0 8px;padding-bottom:max(env(safe-area-inset-bottom),0.5rem);
+    background:linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+    pointer-events:none;
+  }
+  .ghost-bar-chevrons{display:flex;width:100%;max-width:320px;align-items:center;justify-content:space-between;padding:0 40px;}
+  .ghost-chevron{display:flex;flex-direction:column;align-items:center;}
+  .ghost-chevron.up{transform:rotate(180deg);}
+  .ghost-chevron span{width:10px;height:10px;border-right:2px solid rgba(255,255,255,0.85);border-bottom:2px solid rgba(255,255,255,0.85);transform:rotate(45deg);}
+  .ghost-chevron span:first-child{margin-bottom:-6px;}
+  .ghost-bar p{pointer-events:auto;margin:0;font-size:0.75rem;color:rgba(255,255,255,0.85);}
+  .ghost-bar a{color:inherit;text-decoration:underline;text-decoration-color:rgba(255,255,255,0.5);text-underline-offset:2px;}
+  .ghost-bar a:hover{color:#fff;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="https://bigie.us/">powered by bigie</a>
+</nav>
+
+<div class="hero">
+  <img class="hero-photo" src="assets/colosseum-night.jpg" alt="The Colosseum, illuminated at night">
+  <div class="scrim-a"></div>
+  <div class="scrim-b"></div>
+  <svg class="laser" viewBox="0 0 1440 2" preserveAspectRatio="none" style="overflow:visible;">
+    <defs>
+      <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="3.2" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <circle cx="64" cy="1" r="4" fill="var(--accent)" filter="url(#glow)"/>
+    <line x1="64" y1="1" x2="1400" y2="1" stroke="var(--accent)" stroke-width="1.5" filter="url(#glow)" opacity="0.85"/>
+  </svg>
+
+  <div class="hero-copy">
+    <div class="name-row">
+      <div class="tekton-wrap">
+        <h1>TEKTON</h1>
+        <div class="the-builder">The Builder</div>
+      </div>
+      <span class="by-bigie">by Bigie</span>
+    </div>
+    <div class="divider"></div>
+    <p class="tagline">Real sites, engineered to spec &mdash; not assembled from a template. Here&rsquo;s what&rsquo;s on the bench right now.</p>
+  </div>
+</div>
+
+<div class="roster">
+  <div class="card" style="--badge:var(--accent);">
+    <div class="card-name">Parrish Tree Service</div>
+    <div class="card-meta">Daleville, AL</div>
+    <div class="card-status">Live</div>
+  </div>
+  <div class="card" style="--badge:#9AA0A6;">
+    <div class="card-name">Made by Madison</div>
+    <div class="card-meta">madisonmade.net</div>
+    <div class="card-status">In Progress</div>
+  </div>
+  <div class="card" style="--badge:#9AA0A6;">
+    <div class="card-name">Elements Salon</div>
+    <div class="card-meta">Opelika, AL</div>
+    <div class="card-status">In Progress</div>
+  </div>
+  <div class="card" style="--badge:#9AA0A6;">
+    <div class="card-name">AirCon Mechanical</div>
+    <div class="card-meta">Auburn/Opelika, AL</div>
+    <div class="card-status">In Progress</div>
+  </div>
+  <div class="card" style="--badge:#55585F;">
+    <div class="card-name">Bigie App</div>
+    <div class="card-meta">In-house product</div>
+    <div class="card-status">Not Started</div>
+  </div>
+  <div class="card" style="--badge:#55585F;">
+    <div class="card-name">Bigie Lite</div>
+    <div class="card-meta">In-house product</div>
+    <div class="card-status">Not Started</div>
+  </div>
+  <div class="card" style="--badge:#55585F;">
+    <div class="card-name">Car Riders</div>
+    <div class="card-meta">In-house product</div>
+    <div class="card-status">Not Started</div>
+  </div>
+</div>
+
+<footer>
+  Concept draft, not final. Hero photo: Benfoto (Ben Skála), CC BY-SA 3.0, via Wikimedia Commons &mdash; needs a licensed or original replacement before this goes live.
+</footer>
+
+<div class="ghost-bar">
+  <div class="ghost-bar-chevrons">
+    <span class="ghost-chevron down"><span></span><span></span></span>
+    <span class="ghost-chevron up"><span></span><span></span></span>
+  </div>
+  <p>tektonbybigie.com &mdash; Powered by <a href="https://bigie.us" target="_blank" rel="noopener noreferrer">Bigie</a></p>
+</div>
+
+</body>
+</html>

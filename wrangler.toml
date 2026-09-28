@@ -1,0 +1,12 @@
+name = "tekton-by-bigie"
+compatibility_date = "2026-09-24"
+account_id = "bfcff7ae9588a5fc7545d2a9be3272ef"
+
+routes = [
+  { pattern = "tektonbybigie.com", custom_domain = true },
+  { pattern = "www.tektonbybigie.com", custom_domain = true }
+]
+
+[assets]
+directory = "./public"
+not_found_handling = "404-page"
