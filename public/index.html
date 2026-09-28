@@ -70,9 +70,13 @@
     display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;
   }
   .card{
+    display:block;
     background:linear-gradient(180deg,#1D1F23 0%,#17191C 100%);border:1px solid #2C2E33;border-radius:6px;
     padding:22px 22px 20px 22px;position:relative;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,0.35);
+    transition:border-color 0.15s ease,transform 0.15s ease;
   }
+  a.card{cursor:pointer;}
+  a.card:hover{border-color:var(--badge,var(--accent));transform:translateY(-2px);}
   .card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--badge,var(--accent));}
   .card-name{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:1.1rem;color:var(--ink);}
   .card-meta{font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:#8B8D94;margin-top:6px;}
@@ -138,16 +142,16 @@
 </div>
 
 <div class="roster">
-  <div class="card" style="--badge:var(--accent);">
+  <a class="card" style="--badge:var(--accent);" href="https://parrishtreeservice.com" target="_blank" rel="noopener noreferrer">
     <div class="card-name">Parrish Tree Service</div>
     <div class="card-meta">Daleville, AL</div>
     <div class="card-status">Live</div>
-  </div>
-  <div class="card" style="--badge:#9AA0A6;">
+  </a>
+  <a class="card" style="--badge:#9AA0A6;" href="https://madisonmade.net" target="_blank" rel="noopener noreferrer">
     <div class="card-name">Made by Madison</div>
     <div class="card-meta">madisonmade.net</div>
     <div class="card-status">In Progress</div>
-  </div>
+  </a>
   <div class="card" style="--badge:#9AA0A6;">
     <div class="card-name">Elements Salon</div>
     <div class="card-meta">Opelika, AL</div>
@@ -158,11 +162,11 @@
     <div class="card-meta">Auburn/Opelika, AL</div>
     <div class="card-status">In Progress</div>
   </div>
-  <div class="card" style="--badge:#9AA0A6;">
+  <a class="card" style="--badge:#9AA0A6;" href="/kb-photography/">
     <div class="card-name">KB Photography</div>
     <div class="card-meta">Freeport, FL</div>
     <div class="card-status">In Progress</div>
-  </div>
+  </a>
   <div class="card" style="--badge:#55585F;">
     <div class="card-name">Bigie App</div>
     <div class="card-meta">In-house product</div>
