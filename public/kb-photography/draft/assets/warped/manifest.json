@@ -92,7 +92,7 @@
     ]
   },
   "girls-trip": {
-    "confirmed": true,
+    "confirmed": false,
     "slots": [
       [
         "slot0_0.png"
