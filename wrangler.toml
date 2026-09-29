@@ -8,6 +8,10 @@ routes = [
   { pattern = "www.tektonbybigie.com", custom_domain = true }
 ]
 
+[[kv_namespaces]]
+binding = "DRAFT_CREDENTIALS"
+id = "89b17f1d3a894d84a5612ad0b011a815"
+
 [assets]
 directory = "./public"
 binding = "ASSETS"
