@@ -81,7 +81,7 @@
     ]
   },
   "field-and-film": {
-    "confirmed": false,
+    "confirmed": true,
     "slots": [
       [
         "slot0_0.png",
