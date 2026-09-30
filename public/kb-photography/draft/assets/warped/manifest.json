@@ -1,6 +1,6 @@
 {
   "family-reunion": {
-    "confirmed": false,
+    "confirmed": true,
     "slots": [
       [
         "slot0_0.png",
