@@ -40,7 +40,7 @@
     ]
   },
   "golden-hour-getaway": {
-    "confirmed": false,
+    "confirmed": true,
     "slots": [
       [
         "slot0_0.png",
