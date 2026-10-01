@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bree Hopkins-Turkington &mdash; Elements</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #141216; --ink-deep: #0c0a0d; --paper: #f5f1ee; --card: #1d1a1e;
+    --rose: #c23a63; --rose-deep: #8f2749; --gold: #cdaa6d; --text-muted: #b9b0b6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ink); color: var(--paper);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .display { font-family: "Bebas Neue", "Inter", sans-serif; letter-spacing: 0.03em; }
+  a { color: inherit; }
+
+  .bg-slideshow { position: fixed; inset: 0; z-index: -3; }
+  .bg-slide { position: fixed; inset: 0; display: flex; opacity: 0; }
+  .bg-slide-half { flex: 1; height: 100%; background-size: cover; background-position: center; background-repeat: no-repeat; }
+  .page-overlay {
+    position: fixed; inset: 0; z-index: -2; pointer-events: none;
+    background: linear-gradient(180deg, rgba(12,10,13,0.55) 0%, rgba(12,10,13,0.72) 100%);
+  }
+
+  nav {
+    position: sticky; top: 0; z-index: 40; background: rgba(12,10,13,0.92); backdrop-filter: blur(6px);
+    padding: 16px 24px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid rgba(245,241,238,0.08);
+  }
+  .nav-brand { font-family: "Bebas Neue"; font-size: 1.3rem; text-decoration: none; }
+  .nav-right { display: flex; align-items: center; gap: 18px; }
+  .nav-back { font-size: 0.85rem; text-decoration: none; color: var(--text-muted); }
+  .nav-back:hover { color: var(--rose); }
+
+  .nav-menu { position: relative; }
+  .nav-menu-trigger { cursor: pointer; list-style: none; display: flex; align-items: center; padding: 4px; }
+  .nav-menu-trigger::-webkit-details-marker { display: none; }
+  .nav-menu-icon { display: flex; flex-direction: column; gap: 4px; width: 20px; }
+  .nav-menu-icon span { display: block; height: 2px; background: var(--paper); border-radius: 1px; }
+  .nav-menu-panel {
+    position: absolute; top: calc(100% + 10px); right: 0; min-width: 230px;
+    background: var(--ink-deep); border: 1px solid rgba(245,241,238,0.12); border-radius: 12px;
+    padding: 8px; display: flex; flex-direction: column; gap: 2px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5); z-index: 60;
+  }
+  .nav-menu-panel a { display: block; padding: 10px 12px; border-radius: 8px; font-size: 0.88rem; text-decoration: none; color: var(--paper); }
+  .nav-menu-panel a:hover { background: rgba(245,241,238,0.06); }
+  .nav-submenu > summary {
+    display: flex; align-items: center; justify-content: space-between; list-style: none; cursor: pointer;
+    padding: 10px 12px; border-radius: 8px; font-size: 0.88rem; color: var(--paper);
+  }
+  .nav-submenu > summary::-webkit-details-marker { display: none; }
+  .nav-submenu > summary:hover { background: rgba(245,241,238,0.06); }
+  .nav-submenu > summary::after { content: '\203A'; color: var(--text-muted); transition: transform 0.15s ease; }
+  .nav-submenu[open] > summary::after { transform: rotate(90deg); }
+  .nav-submenu-panel { padding-left: 10px; display: flex; flex-direction: column; gap: 2px; margin: 2px 0 4px; }
+  .nav-submenu-panel a { font-size: 0.82rem; color: var(--text-muted); padding: 8px 12px; }
+  .nav-menu-divider { height: 1px; background: rgba(245,241,238,0.1); margin: 6px 4px; }
+  .nav-menu-powered { color: var(--rose) !important; font-weight: 600; }
+
+  .profile-head { max-width: 900px; margin: 0 auto; padding: 60px 24px 20px; display: flex; gap: 28px; align-items: center; }
+  .avatar-lg {
+    width: 100px; height: 100px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-family: "Bebas Neue"; font-size: 2rem; background: linear-gradient(150deg, var(--rose), var(--rose-deep)); color: #fff;
+  }
+  .profile-head h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); margin: 0; }
+  .profile-head .role { color: var(--gold); font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 6px; }
+
+  section { max-width: 900px; margin: 0 auto; padding: 50px 24px; }
+  .section-title { font-size: clamp(1.6rem, 4vw, 2.1rem); margin: 0 0 6px; }
+  .eyebrow { font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin: 0 0 8px; }
+
+  .about p { color: var(--text-muted); font-size: 1.02rem; line-height: 1.8; max-width: 62ch; }
+
+  .portfolio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 20px; }
+  .portfolio-slot {
+    aspect-ratio: 1; border-radius: 12px; background: var(--card); border: 1px dashed rgba(245,241,238,0.15);
+    display: flex; align-items: center; justify-content: center; color: rgba(245,241,238,0.3); font-size: 0.72rem;
+    text-align: center; padding: 10px;
+  }
+
+  .reviews { background: rgba(12,10,13,0.5); }
+  .review-card {
+    background: var(--card); border: 1px solid rgba(245,241,238,0.08); border-radius: 12px; padding: 22px; margin-top: 16px;
+  }
+  .stars { color: var(--gold); font-size: 0.9rem; margin-bottom: 8px; }
+  .review-card p { margin: 0; color: var(--text-muted); font-size: 0.96rem; line-height: 1.7; }
+  .review-card .who { margin-top: 10px; font-size: 0.82rem; color: var(--paper); font-weight: 600; }
+
+  .cal-mock { margin-top: 20px; border-radius: 14px; overflow: hidden; overflow-x: auto; background: var(--card); border: 1px solid rgba(245,241,238,0.12); }
+  .cal-mock-head { display: grid; grid-template-columns: 52px repeat(5, 1fr); border-bottom: 1px solid rgba(245,241,238,0.12); min-width: 460px; }
+  .cal-mock-head > div { padding: 10px 4px; font-size: 0.72rem; font-weight: 650; text-align: center; color: var(--text-muted); }
+  .cal-mock-body { display: grid; grid-template-columns: 52px repeat(5, 1fr); min-width: 460px; }
+  .cal-mock-times { display: grid; grid-template-rows: repeat(8, 42px); }
+  .cal-mock-times > div { font-size: 0.6rem; color: rgba(245,241,238,0.35); text-align: right; padding-right: 8px; transform: translateY(-6px); }
+  .cal-mock-grid { display: contents; }
+  .cal-mock-day-col { position: relative; height: 336px; border-left: 1px solid rgba(245,241,238,0.08);
+    background-image: repeating-linear-gradient(to bottom, rgba(245,241,238,0.07), rgba(245,241,238,0.07) 1px, transparent 1px, transparent 42px); }
+  .cal-mock-lanes { position: absolute; inset: 0; display: flex; gap: 1px; padding: 0 2px; }
+  .cal-mock-lane-col { position: relative; flex: 1; min-width: 0; }
+  .cal-mock-block { position: absolute; left: 1px; right: 1px; border-radius: 3px; font-size: 0.6rem; font-weight: 700;
+    color: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; opacity: 0.94; text-shadow: 0 1px 1px rgba(0,0,0,0.3); }
+  .cal-mock-legend { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 14px; }
+  .cal-mock-legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--text-muted); }
+  .cal-mock-swatch { width: 11px; height: 11px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+  .cal-mock-caption { font-size: 0.75rem; color: rgba(245,241,238,0.4); margin-top: 10px; line-height: 1.6; max-width: 62ch; }
+
+  .book-form { background: var(--card); border: 1px solid rgba(245,241,238,0.08); border-radius: 16px; padding: 30px; margin-top: 20px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  @media (max-width: 560px) { .form-row { grid-template-columns: 1fr; } }
+  label { display: block; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.02em; }
+  input, select, textarea {
+    width: 100%; background: var(--ink); border: 1px solid rgba(245,241,238,0.15); border-radius: 8px;
+    padding: 11px 12px; color: var(--paper); font-family: inherit; font-size: 0.94rem;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--rose); }
+  .services-check { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .services-check label {
+    display: flex; align-items: center; gap: 7px; background: var(--ink); border: 1px solid rgba(245,241,238,0.15);
+    border-radius: 999px; padding: 8px 14px; font-size: 0.85rem; margin: 0; cursor: pointer; color: var(--paper);
+  }
+  .services-check input { width: auto; }
+  .submit-btn {
+    background: var(--rose); color: #fff; border: none; border-radius: 999px; padding: 13px 30px;
+    font-weight: 650; font-size: 0.95rem; cursor: pointer; margin-top: 4px;
+  }
+  .submit-btn:hover { background: var(--rose-deep); }
+  .form-note { font-size: 0.78rem; color: rgba(245,241,238,0.35); margin-top: 14px; line-height: 1.6; }
+
+  .ghost-bar {
+    position: fixed; inset-inline: 0; bottom: 0; z-index: 50;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 40px 0 8px; padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+    background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+    pointer-events: none;
+  }
+  .ghost-bar-chevrons { display: flex; width: 100%; max-width: 320px; align-items: center; justify-content: space-between; padding: 0 40px; }
+  .ghost-chevron { display: flex; flex-direction: column; align-items: center; }
+  .ghost-chevron.up { transform: rotate(180deg); }
+  .ghost-chevron span { width: 10px; height: 10px; border-right: 2px solid rgba(255,255,255,0.85); border-bottom: 2px solid rgba(255,255,255,0.85); transform: rotate(45deg); }
+  .ghost-chevron span:first-child { margin-bottom: -6px; }
+  .ghost-bar p { pointer-events: auto; margin: 0; font-size: 0.75rem; color: rgba(255,255,255,0.85); }
+  .ghost-bar a { color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.5); text-underline-offset: 2px; }
+  .ghost-bar a:hover { color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="bg-slideshow" id="bgSlideshow"></div>
+<div class="page-overlay"></div>
+
+<nav>
+  <a class="nav-brand display" href="index.html">ELEMENTS</a>
+  <div class="nav-right">
+    <a class="nav-back" href="salon.html">&larr; All Stylists</a>
+    <details class="nav-menu">
+      <summary class="nav-menu-trigger"><span class="nav-menu-icon"><span></span><span></span><span></span></span></summary>
+      <div class="nav-menu-panel">
+        <a href="salon.html">Salon</a>
+        <a href="index.html#tattoo">Tattoo</a>
+        <a href="index.html#piercing">Piercing</a>
+        <a href="salon.html#availability">Calendar</a>
+        <a href="salon.html#products">Products</a>
+        <details class="nav-submenu">
+          <summary>Stylists</summary>
+          <div class="nav-submenu-panel">
+            <a href="stylist-robert-todd.html">Robert Todd</a>
+            <a href="stylist-ayden-thaxton.html">Ayden Thaxton</a>
+            <a href="stylist-bailey-morgan.html">Bailey Morgan</a>
+            <a href="stylist-bree-hopkins-turkington.html">Bree Hopkins-Turkington</a>
+            <a href="stylist-kayla-clark.html">Kayla Clark</a>
+            <a href="stylist-kayla-grimes.html">Kayla Grimes</a>
+            <a href="stylist-kyndall-mccracken.html">Kyndall McCracken</a>
+            <a href="stylist-lily-padgett.html">Lily Padgett</a>
+            <a href="stylist-merri-defoor.html">Merri Claralyn Defoor</a>
+            <a href="stylist-talynn-watts.html">Talynn Rae Watts</a>
+          </div>
+        </details>
+        <div class="nav-menu-divider"></div>
+        <a href="https://bigie.us/" class="nav-menu-powered" target="_blank" rel="noopener">Powered by Bigie</a>
+      </div>
+    </details>
+  </div>
+</nav>
+
+<div class="profile-head">
+  <div class="avatar-lg">BH</div>
+  <div>
+    <h1 class="display">Bree Hopkins-Turkington</h1>
+    <div class="role">Stylist &middot; Elements Salon</div>
+  </div>
+</div>
+
+<section class="about">
+  <div class="eyebrow">About</div>
+  <h2 class="section-title">Specialties &amp; Style</h2>
+  <p>[ real bio goes here &mdash; what Bree specializes in, how long she's been doing hair, her approach with clients. Pull this straight from what she tells you. ]</p>
+</section>
+
+<section class="portfolio">
+  <div class="eyebrow">Portfolio</div>
+  <h2 class="section-title">Recent Work</h2>
+  <div class="portfolio-grid">
+    <div class="portfolio-slot">before / after</div>
+    <div class="portfolio-slot">before / after</div>
+    <div class="portfolio-slot">before / after</div>
+    <div class="portfolio-slot">before / after</div>
+    <div class="portfolio-slot">before / after</div>
+    <div class="portfolio-slot">before / after</div>
+  </div>
+</section>
+
+<section class="reviews">
+  <div class="eyebrow">Testimonials</div>
+  <h2 class="section-title">What Clients Say</h2>
+  <div class="review-card">
+    <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+    <p>[ real review text goes here &mdash; pull the actual reviews from the Facebook page's own review section once you're ready to build this out for real. ]</p>
+    <div class="who">&mdash; real client name</div>
+  </div>
+</section>
+
+<section class="booking">
+  <div class="eyebrow">Availability</div>
+  <h2 class="section-title">Bree's Schedule</h2>
+  <div id="bhCalMockup"></div>
+  <p class="cal-mock-caption">Mockup only &mdash; this becomes Bree's real live calendar once her Google account and calendar are set up, shared free/busy only so no client details are ever public.</p>
+</section>
+
+<section class="request">
+  <div class="eyebrow">Request an Appointment</div>
+  <h2 class="section-title">Book With Bree</h2>
+  <div class="book-form">
+    <div class="form-row">
+      <div><label for="name">Your Name</label><input type="text" id="name" name="name" placeholder="Jane Smith"></div>
+      <div><label for="phone">Cell Phone</label><input type="tel" id="phone" name="phone" placeholder="(334) 555-0100"></div>
+    </div>
+    <div class="form-row">
+      <div><label for="email">Email</label><input type="email" id="email" name="email" placeholder="jane@email.com"></div>
+      <div><label for="timeframe">Preferred Time Frame</label><input type="text" id="timeframe" name="timeframe" placeholder="e.g. Thursday afternoon, or Sept 20-22"></div>
+    </div>
+    <label>What are you looking to get done?</label>
+    <div class="services-check">
+      <label><input type="checkbox" name="service" value="Haircut"> Haircut</label>
+      <label><input type="checkbox" name="service" value="Color"> Color</label>
+      <label><input type="checkbox" name="service" value="Highlights"> Highlights</label>
+      <label><input type="checkbox" name="service" value="Keratin"> Keratin Smoothing</label>
+      <label><input type="checkbox" name="service" value="Waxing"> Waxing</label>
+      <label><input type="checkbox" name="service" value="Other"> Other</label>
+    </div>
+    <label for="notes">Anything else Bree should know</label>
+    <textarea id="notes" name="notes" rows="3" placeholder="Hair length, color goals, anything specific..." style="margin-bottom: 16px;"></textarea>
+    <button class="submit-btn" type="button">Send Request</button>
+    <p class="form-note">This request goes straight to Bree's own email &mdash; the same one tied to her calendar above. She'll confirm the actual time with you directly by text or email once she's checked her real schedule. [Form submission needs to be wired to a real email endpoint once Bree's dedicated Gmail is set up &mdash; structure and fields are ready now.]</p>
+  </div>
+</section>
+
+<div class="ghost-bar">
+  <div class="ghost-bar-chevrons">
+    <span class="ghost-chevron down"><span></span><span></span></span>
+    <span class="ghost-chevron up"><span></span><span></span></span>
+  </div>
+  <p>bigie.us/web-design/elements-salon &mdash; Powered by <a href="https://tektonbybigie.com" target="_blank" rel="noopener noreferrer">Tekton by Bigie</a></p>
+</div>
+
+<script src="assets/nav-menu.js"></script>
+<script src="assets/bg-slideshow.js"></script>
+<script>
+  initBgSlideshow('bgSlideshow', [
+    'assets/bg-01-exterior.webp',
+    ['assets/bg-02-interior.jpg', 'assets/bg-03-copper-hair.jpg'],
+    ['assets/bg-04-blonde-cut.jpg', 'assets/bg-05-beach-waves.jpg'],
+    ['assets/bg-06-burgundy-curls.jpg', 'assets/bg-08-split-color.jpg'],
+    'assets/bg-07-team.jpg',
+    ['assets/bg-09-color-process.jpg', 'assets/bg-10-silver-color.jpg'],
+    ['assets/bg-11-balayage-portrait.jpg', 'assets/bg-12-copper-closeup.jpg']
+  ], 4);
+</script>
+<script src="assets/cal-mockup.js"></script>
+<script>
+  renderCalMockup('bhCalMockup', ['BH'], [
+    {day:0, who:'BH', start:9, end:11.5},  {day:0, who:'BH', start:13, end:15},
+    {day:1, who:'BH', start:10, end:12},   {day:1, who:'BH', start:14, end:17},
+    {day:2, who:'BH', start:9, end:10.5},  {day:2, who:'BH', start:12.5, end:15},
+    {day:3, who:'BH', start:11, end:13.5}, {day:3, who:'BH', start:15, end:17},
+    {day:4, who:'BH', start:9, end:12},    {day:4, who:'BH', start:13, end:14.5}
+  ]);
+</script>
+</body>
+</html>
