@@ -71,6 +71,103 @@ async function getAdminCredential(env) {
   return await env.DRAFT_CREDENTIALS.get("_admin", { type: "json" });
 }
 
+// ---- client activity tracking (shown on /admin) ----
+const ACTIVITY_PREFIX = "_activity:";
+const MAX_EVENTS = 60;
+const VIEW_THROTTLE_MS = 10 * 60 * 1000;
+const DUPE_WINDOW_MS = 3 * 60 * 1000;
+const TRACKED_CLIENT_TYPES = ["view", "temp_login", "login", "password_set"];
+
+function isBotUA(ua) {
+  return !ua || /bot|crawl|spider|preview|facebookexternalhit|slurp|whatsapp|telegram|discord|skype|embedly|curl|wget|python|go-http|okhttp|headless|lighthouse|monitor|uptime|node-fetch|axios/i.test(ua);
+}
+
+function describeUA(ua) {
+  const os = /iPhone/.test(ua) ? "iPhone" : /iPad/.test(ua) ? "iPad" : /Android/.test(ua) ? "Android"
+    : /Macintosh|Mac OS X/.test(ua) ? "Mac" : /Windows/.test(ua) ? "Windows" : /Linux/.test(ua) ? "Linux" : "Unknown device";
+  const br = /Edg\//.test(ua) ? "Edge" : /OPR\/|Opera/.test(ua) ? "Opera" : /CriOS|Chrome\//.test(ua) ? "Chrome"
+    : /FxiOS|Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : "";
+  return br ? `${os} · ${br}` : os;
+}
+
+function isHtmlNavigation(request, url) {
+  const dest = request.headers.get("Sec-Fetch-Dest");
+  if (dest && dest !== "document") return false;
+  return url.pathname.endsWith("/") || url.pathname.endsWith(".html");
+}
+
+async function logActivity(env, slug, type, { email, request }) {
+  try {
+    const ua = request.headers.get("User-Agent") || "";
+    if (isBotUA(ua)) return;
+    const creds = await getCredentialsForSlug(env, slug);
+    if (!creds.length) return;
+
+    const cf = request.cf || {};
+    const loc = [cf.city, cf.region, cf.country].filter(Boolean).join(", ");
+    const device = describeUA(ua);
+    const cleanEmail = email ? String(email).slice(0, 80) : null;
+    const key = ACTIVITY_PREFIX + slug;
+    const data = (await env.DRAFT_CREDENTIALS.get(key, { type: "json" })) || {};
+    data.events = Array.isArray(data.events) ? data.events : [];
+    data.clients = data.clients || {};
+    const now = Date.now();
+    const c = cleanEmail && TRACKED_CLIENT_TYPES.includes(type)
+      ? (data.clients[cleanEmail] = data.clients[cleanEmail] || {})
+      : null;
+
+    if (type === "view") {
+      if (c.lastViewAt && now - c.lastViewAt < VIEW_THROTTLE_MS) return;
+      c.lastViewAt = now;
+      c.viewCount = (c.viewCount || 0) + 1;
+    } else {
+      const last = data.events[0];
+      if (last && last.type === type && last.email === cleanEmail && last.device === device && last.loc === loc && now - last.t < DUPE_WINDOW_MS) return;
+      if (type === "link_opened") {
+        data.firstLinkOpenAt = data.firstLinkOpenAt || now;
+        data.lastLinkOpenAt = now;
+        data.linkOpens = (data.linkOpens || 0) + 1;
+      } else if (type === "failed_login") {
+        data.failedLogins = (data.failedLogins || 0) + 1;
+      } else if (c) {
+        if (type === "temp_login") c.firstTempLoginAt = c.firstTempLoginAt || now;
+        if (type === "login") c.loginCount = (c.loginCount || 0) + 1;
+        if (type === "password_set") c.passwordSetAt = now;
+        c.lastLoginAt = now;
+      }
+    }
+
+    data.events.unshift({ t: now, type, email: cleanEmail, device, loc });
+    data.events = data.events.slice(0, MAX_EVENTS);
+    await env.DRAFT_CREDENTIALS.put(key, JSON.stringify(data));
+  } catch (e) {
+    // tracking must never break the draft site
+  }
+}
+
+const TZ = "America/Chicago";
+function fmtTime(ms) {
+  return new Date(ms).toLocaleString("en-US", { timeZone: TZ, month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " CT";
+}
+function ago(ms) {
+  const s = Math.max(0, Math.floor((Date.now() - ms) / 1000));
+  if (s < 60) return "just now";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m} min ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} hr ago`;
+  const d = Math.floor(h / 24);
+  return `${d} day${d === 1 ? "" : "s"} ago`;
+}
+const EVENT_LABELS = {
+  link_opened: "Opened the link (saw the login page)",
+  failed_login: "Failed login attempt",
+  temp_login: "Logged in with the temp password",
+  password_set: "Set a new password",
+  login: "Logged in",
+  view: "Viewed the draft",
+};
+
 async function findMatch(env, slug, email, password) {
   const admin = await getAdminCredential(env);
   if (admin && admin.email === email && admin.password === password) {
@@ -188,17 +285,58 @@ async function renderAdminPage(env) {
   const list = await env.DRAFT_CREDENTIALS.list();
   const rows = [];
   for (const key of list.keys) {
-    if (key.name === "_admin") continue;
+    if (key.name === "_admin" || key.name.startsWith(ACTIVITY_PREFIX)) continue;
     const val = await env.DRAFT_CREDENTIALS.get(key.name, { type: "json" });
     const creds = Array.isArray(val) ? val : [];
-    rows.push({ slug: key.name, creds });
+    const activity = (await env.DRAFT_CREDENTIALS.get(ACTIVITY_PREFIX + key.name, { type: "json" })) || {};
+    rows.push({ slug: key.name, creds, activity });
   }
+
+  function statusCell(r) {
+    if (r.creds.length === 0) return '<span class="muted">no login set</span>';
+    const act = r.activity;
+    return r.creds.map((c) => {
+      const a = (act.clients || {})[c.email] || {};
+      let badge;
+      if (!c.mustReset) {
+        badge = a.passwordSetAt
+          ? `<span class="st ok">Password set ${escapeHtml(ago(a.passwordSetAt))}</span>`
+          : '<span class="st ok">Password set (before tracking began)</span>';
+      } else if (a.firstTempLoginAt) {
+        badge = `<span class="st warn">Logged in with temp password ${escapeHtml(ago(a.firstTempLoginAt))} &mdash; hasn't set a new one</span>`;
+      } else if (act.linkOpens) {
+        badge = `<span class="st warn">Opened the link ${escapeHtml(ago(act.lastLinkOpenAt))} &mdash; hasn't logged in</span>`;
+      } else {
+        badge = '<span class="st none">Not opened yet</span>';
+      }
+      const view = a.lastViewAt
+        ? `<div class="sub">Last viewed the draft ${escapeHtml(ago(a.lastViewAt))} (${a.viewCount || 1} visit${(a.viewCount || 1) === 1 ? "" : "s"})</div>`
+        : "";
+      return `<div class="cl"><div class="who">${escapeHtml(c.email)}</div>${badge}${view}</div>`;
+    }).join("");
+  }
+
+  function activityCell(r) {
+    const ev = Array.isArray(r.activity.events) ? r.activity.events : [];
+    const failed = r.activity.failedLogins ? ` &middot; ${r.activity.failedLogins} failed login${r.activity.failedLogins === 1 ? "" : "s"}` : "";
+    if (ev.length === 0) return '<span class="muted">no activity recorded</span>';
+    const items = ev.slice(0, 15).map((e) => `
+      <li><span class="when">${escapeHtml(fmtTime(e.t))}</span> <b>${escapeHtml(EVENT_LABELS[e.type] || e.type)}</b>${e.email ? ` <span class="muted">(${escapeHtml(e.email)})</span>` : ""}
+        <div class="meta">${escapeHtml([e.device, e.loc].filter(Boolean).join(" · ") || "unknown")}</div></li>`).join("");
+    return `<details><summary>${ev.length} event${ev.length === 1 ? "" : "s"}${failed} &mdash; last ${escapeHtml(ago(ev[0].t))}</summary><ul class="events">${items}</ul>
+      <form method="POST" action="/admin" onsubmit="return confirm('Clear the activity log for ${escapeHtml(r.slug)}?')">
+        <input type="hidden" name="action" value="clear_activity"><input type="hidden" name="slug" value="${escapeHtml(r.slug)}">
+        <button class="clear" type="submit">Clear log</button></form></details>`;
+  }
+
   const tableRows = rows.map((r) => `
     <tr>
       <td>${escapeHtml(r.slug)}</td>
       <td>${r.creds.length === 0 ? '<span class="muted">none</span>' : r.creds.map((c) =>
         `${escapeHtml(c.email)} / <code>${escapeHtml(c.password)}</code>${c.mustReset ? ' <span class="pending">(temp, needs reset)</span>' : ""}`
       ).join("<br>")}</td>
+      <td>${statusCell(r)}</td>
+      <td>${activityCell(r)}</td>
     </tr>`).join("");
 
   return htmlResponse(`<!DOCTYPE html>
@@ -221,14 +359,30 @@ async function renderAdminPage(env) {
   .pending{color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:0.72rem;}
   .hint{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:#6C6E75;margin-top:24px;line-height:1.7;}
   code.cmd{display:block;background:#0F1012;padding:10px 12px;border-radius:5px;margin-top:6px;overflow-x:auto;}
+  .cl{margin-bottom:10px;} .cl:last-child{margin-bottom:0;}
+  .who{font-size:0.78rem;color:#8B8D94;margin-bottom:3px;}
+  .st{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;padding:4px 9px;border-radius:999px;line-height:1.4;}
+  .st.ok{background:rgba(70,170,110,0.15);color:#6fd49a;border:1px solid rgba(70,170,110,0.4);}
+  .st.warn{background:rgba(201,122,62,0.15);color:#E8A66A;border:1px solid rgba(201,122,62,0.45);}
+  .st.none{background:rgba(255,255,255,0.05);color:#8B8D94;border:1px solid #2C2E33;}
+  .sub{font-size:0.78rem;color:#9aa0a6;margin-top:5px;}
+  details summary{cursor:pointer;font-size:0.84rem;color:#cfd3de;}
+  ul.events{list-style:none;padding:0;margin:10px 0 8px 0;display:grid;gap:9px;font-size:0.82rem;}
+  .when{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:#8B8D94;margin-right:6px;}
+  .meta{font-size:0.72rem;color:#6C6E75;margin-top:2px;}
+  button.clear{background:none;border:1px solid #2C2E33;color:#8B8D94;border-radius:5px;padding:5px 10px;font-family:'IBM Plex Mono',monospace;font-size:0.68rem;cursor:pointer;}
+  button.clear:hover{border-color:#a55;color:#e88;}
 </style>
 </head>
 <body>
   <h1>Draft Access — All Clients</h1>
   <table>
-    <tr><th>Client</th><th>Logins</th></tr>
-    ${tableRows || '<tr><td colspan="2" class="muted">No client credentials set yet.</td></tr>'}
+    <tr><th>Client</th><th>Logins</th><th>Status</th><th>Activity</th></tr>
+    ${tableRows || '<tr><td colspan="4" class="muted">No client credentials set yet.</td></tr>'}
   </table>
+  <div class="hint">
+    Activity tracking began 2026-10-02 &mdash; earlier visits weren't recorded. Times are Central. Your own admin views aren't counted, and bots/link-preview crawlers are filtered out. This page can lag up to a minute behind real activity.
+  </div>
   <div class="hint">
     To add or update a client's login:<br>
     <code class="cmd">npx wrangler kv key put --binding=DRAFT_CREDENTIALS "&lt;slug&gt;" '[{"email":"person@example.com","password":"temp-password","mustReset":true}]'</code>
@@ -238,7 +392,7 @@ async function renderAdminPage(env) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const segments = url.pathname.split("/").filter(Boolean);
     const isAdminRoute = segments[0] === "admin";
@@ -258,7 +412,20 @@ export default {
     const authorized = session && (session.scope === "*" || session.scope === slug);
 
     if (authorized) {
-      if (isAdminRoute) return renderAdminPage(env);
+      if (isAdminRoute) {
+        if (request.method === "POST") {
+          const form = await request.formData();
+          if (form.get("action") === "clear_activity") {
+            const target = String(form.get("slug") || "");
+            if (target && target !== "_admin") await env.DRAFT_CREDENTIALS.delete(ACTIVITY_PREFIX + target);
+          }
+          return redirect("/admin", []);
+        }
+        return renderAdminPage(env);
+      }
+      if (session.scope === slug && request.method === "GET" && isHtmlNavigation(request, url)) {
+        ctx.waitUntil(logActivity(env, slug, "view", { email: session.email, request }));
+      }
       return env.ASSETS.fetch(request);
     }
 
@@ -286,6 +453,7 @@ export default {
         }
         creds[idx] = { email: creds[idx].email, password: newPassword, mustReset: false };
         await env.DRAFT_CREDENTIALS.put(slug, JSON.stringify(creds));
+        ctx.waitUntil(logActivity(env, slug, "password_set", { email: resetPayload.email, request }));
         const cookie = await makeCookie({ scope: slug, email: resetPayload.email }, SESSION_TTL_SECONDS, secret);
         return redirect(url.pathname, [
           `${SESSION_COOKIE}=${cookie}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`,
@@ -298,7 +466,12 @@ export default {
       const match = await findMatch(env, slug, email, password);
 
       if (!match) {
+        if (!isAdminRoute) ctx.waitUntil(logActivity(env, slug, "failed_login", { email, request }));
         return htmlResponse(loginPage({ slug, isAdmin: isAdminRoute, error: "Invalid email or password." }), 401, []);
+      }
+
+      if (!isAdminRoute && match.scope === slug) {
+        ctx.waitUntil(logActivity(env, slug, match.mustReset ? "temp_login" : "login", { email, request }));
       }
 
       if (match.mustReset) {
@@ -314,6 +487,9 @@ export default {
       ]);
     }
 
+    if (request.method === "GET" && !isAdminRoute && isHtmlNavigation(request, url)) {
+      ctx.waitUntil(logActivity(env, slug, "link_opened", { request }));
+    }
     return htmlResponse(loginPage({ slug, isAdmin: isAdminRoute }), 401, []);
   },
 };
