@@ -220,6 +220,27 @@
   .reviews-link { text-align: center; margin-top: 22px; }
   @media (max-width: 640px) { .cf-stage { height: 380px; } .cf-arrow { width: 40px; height: 40px; } .cf-prev { left: -4px; } .cf-next { right: -4px; } }
 
+  /* ---------- hiring strip + careers ---------- */
+  .hire-strip { background: linear-gradient(95deg, rgba(255,106,26,0.2), rgba(255,61,46,0.12) 50%, rgba(47,155,255,0.16)); border-bottom: 1px solid var(--line); }
+  .hire-strip .wrap { display: flex; align-items: center; justify-content: center; gap: 8px 16px; flex-wrap: wrap; padding-top: 14px; padding-bottom: 14px; text-align: center; }
+  .hire-strip b { font-family: "Oswald"; text-transform: uppercase; letter-spacing: 0.07em; font-size: 1.05rem; }
+  .hire-strip span { color: #dfe2ea; font-size: 0.92rem; }
+  .hire-strip a { font-weight: 700; text-decoration: none; color: var(--flame); white-space: nowrap; font-size: 0.92rem; }
+  .hire-strip a:hover { text-decoration: underline; }
+  .careers { background: radial-gradient(700px 380px at 0% 0%, rgba(255,106,26,0.12), transparent 60%), radial-gradient(700px 420px at 100% 100%, rgba(47,155,255,0.10), transparent 60%), var(--bg); }
+  .careers-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 44px; align-items: start; }
+  .perk-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 26px 0 22px; }
+  .perk { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; gap: 12px; align-items: flex-start; }
+  .perk .ico { width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0; display: grid; place-items: center; background: linear-gradient(135deg, rgba(255,106,26,0.2), rgba(47,155,255,0.2)); border: 1px solid var(--line); }
+  .perk .ico svg { width: 20px; height: 20px; fill: none; stroke: var(--text); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .perk strong { display: block; font-size: 0.95rem; line-height: 1.3; }
+  .perk span { color: var(--muted); font-size: 0.82rem; }
+  .careers .pledge { font-family: "Oswald"; text-transform: uppercase; letter-spacing: 0.04em; font-size: 1.25rem; line-height: 1.2; margin: 6px 0 8px; }
+  .careers .pledge em { font-style: normal; color: var(--flame); }
+  .apply-alt { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+  @media (max-width: 960px) { .careers-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 520px) { .perk-grid { grid-template-columns: 1fr; } }
+
   /* ---------- service area ---------- */
   .area-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
   .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
@@ -295,6 +316,7 @@
       <a href="#services">Services</a>
       <a href="#club">Comfort Club</a>
       <a href="#reviews">Reviews</a>
+      <a href="#careers">Careers</a>
       <a href="#area">Service Area</a>
       <a href="#contact">Contact</a>
     </nav>
@@ -344,6 +366,15 @@
       <div class="trust-item"><strong>10+ YRS</strong><span>In the trade</span></div>
       <div class="trust-item"><strong>24 HRS</strong><span>Emergency service</span></div>
       <div class="trust-item"><strong>#2025301</strong><span>AL HVAC license</span></div>
+    </div>
+  </div>
+
+  <!-- HIRING STRIP -->
+  <div class="hire-strip">
+    <div class="wrap">
+      <b>Now hiring</b>
+      <span>HVAC installers &amp; service techs &mdash; helpers and apprentices welcome.</span>
+      <a href="#careers">See the openings &rarr;</a>
     </div>
   </div>
 
@@ -490,7 +521,7 @@
         </article>
       </div>
 
-      <p class="club-notes"><b>Add another system</b> to your membership for +$9.99 (Comfort), +$14.99 (Priority) or +$19.99 (VIP) per month. Memberships cover residential HVAC systems. Loyalty credit applies toward a complete HVAC system replacement by McKinley Co. See full terms when you join.</p>
+      <p class="club-notes"><b>Add another system</b> to your membership for +$9.99 (Comfort), +$14.99 (Priority) or +$19.99 (VIP) per month. Loyalty credit applies toward a complete HVAC system replacement by McKinley Co. See full terms when you join.</p>
     </div>
   </section>
 
@@ -557,6 +588,71 @@
       <div class="cf-dots" id="cfDots" aria-label="Choose review"></div>
       <p class="cf-hint">Swipe or tap the arrows to browse &middot; every review is screenshotted straight from Google and Facebook.</p>
       <p class="reviews-link"><a class="btn btn-ghost" href="https://www.google.com/maps/search/McKinley+Co+Heating+%26+Cooling+Wetumpka+AL" target="_blank" rel="noopener">Read all 39 Google reviews</a></p>
+    </div>
+  </section>
+
+  <!-- CAREERS -->
+  <section class="careers" id="careers">
+    <div class="wrap careers-grid">
+      <div>
+        <p class="eyebrow">Now hiring</p>
+        <h2 class="section-title">Join the team that turns <span class="grad-text">chaos into comfort.</span></h2>
+        <p class="lede">We're looking for <b style="color:var(--text)">HVAC installers and service techs</b>. Helpers and apprentices are welcome &mdash; if you've got the drive, we'll bring the training.</p>
+
+        <div class="perk-grid">
+          <div class="perk"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v18M16 7.5c0-1.7-1.8-3-4-3s-4 1.1-4 3 1.7 2.7 4 3.2 4 1.2 4 3.1-1.8 3.2-4 3.2-4-1.3-4-3"/></svg></span><div><strong>Competitive pay</strong></div></div>
+          <div class="perk"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></span><div><strong>Bonuses &amp; performance incentives</strong></div></div>
+          <div class="perk"><span class="ico"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.1L3 17.7 6.3 21l6.3-6.3a4 4 0 0 0 5.1-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></span><div><strong>Top-of-the-line tools &amp; equipment</strong></div></div>
+          <div class="perk"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg></span><div><strong>Ongoing training &amp; growth</strong></div></div>
+          <div class="perk"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/></svg></span><div><strong>Service, maintenance &amp; installs</strong></div></div>
+          <div class="perk"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 11a3 3 0 1 0 0-6M21 20c0-2.6-1.5-4.8-3.7-5.6"/></svg></span><div><strong>A team that values pride, loyalty &amp; hard work</strong></div></div>
+        </div>
+
+        <p class="pledge">Built on hard work. <em>Backed by experience.</em></p>
+        <p class="lede" style="margin-bottom:18px">If you take pride in quality work, customer service, and doing the job right &mdash; let's talk.</p>
+        <div class="apply-alt">
+          <a class="btn btn-primary" href="tel:+13347820347">Text or call (334) 782-0347</a>
+          <a class="btn btn-ghost" href="https://www.instagram.com/mckinleyco.hvac/" target="_blank" rel="noopener">DM @mckinleyco.hvac</a>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h3>Apply now</h3>
+        <p>Tell us a little about you and we'll reach out. Prefer to just text? Use the number on the left.</p>
+        <div class="row">
+          <div><label for="a-name">Your name</label><input id="a-name" type="text" placeholder="John Smith"></div>
+          <div><label for="a-phone">Cell phone</label><input id="a-phone" type="tel" placeholder="(334) 555-0100"></div>
+        </div>
+        <div class="row">
+          <div><label for="a-email">Email (optional)</label><input id="a-email" type="email" placeholder="john@email.com"></div>
+          <div>
+            <label for="a-role">Role you're interested in</label>
+            <select id="a-role">
+              <option>HVAC installer</option>
+              <option>Service technician</option>
+              <option>Helper / apprentice</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="a-exp">HVAC experience</label>
+            <select id="a-exp">
+              <option>New to HVAC</option>
+              <option>1&ndash;2 years</option>
+              <option>3&ndash;5 years</option>
+              <option>5+ years</option>
+            </select>
+          </div>
+          <div><label for="a-city">Where do you live?</label><input id="a-city" type="text" placeholder="Wetumpka, Millbrook..."></div>
+        </div>
+        <div style="margin-bottom:16px">
+          <label for="a-msg">Tell us about yourself</label>
+          <textarea id="a-msg" rows="4" placeholder="Work history, certifications, what you're looking for..."></textarea>
+        </div>
+        <button class="btn btn-primary" type="button" style="width:100%">Send Application</button>
+        <p class="form-note">[Draft preview &mdash; applications get wired to Dylan's email once the site goes live. Structure and fields are ready now.]</p>
+      </div>
     </div>
   </section>
 
