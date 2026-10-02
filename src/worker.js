@@ -130,8 +130,10 @@ async function logActivity(env, slug, type, { email, request }) {
       } else if (type === "failed_login") {
         data.failedLogins = (data.failedLogins || 0) + 1;
       } else if (c) {
-        if (type === "temp_login") c.firstTempLoginAt = c.firstTempLoginAt || now;
-        if (type === "login") c.loginCount = (c.loginCount || 0) + 1;
+        if (type === "login" || type === "temp_login") {
+          c.firstLoginAt = c.firstLoginAt || now;
+          c.loginCount = (c.loginCount || 0) + 1;
+        }
         if (type === "password_set") c.passwordSetAt = now;
         c.lastLoginAt = now;
       }
@@ -162,8 +164,8 @@ function ago(ms) {
 const EVENT_LABELS = {
   link_opened: "Opened the link (saw the login page)",
   failed_login: "Failed login attempt",
-  temp_login: "Logged in with the temp password",
-  password_set: "Set a new password",
+  temp_login: "Logged in",
+  password_set: "Changed their password",
   login: "Logged in",
   view: "Viewed the draft",
 };
@@ -206,6 +208,8 @@ function pageShell(title, bodyHtml) {
   input{width:100%;padding:11px 12px;margin-bottom:18px;background:#0F1012;border:1px solid #2C2E33;
     border-radius:5px;color:var(--ink);font-family:'Space Grotesk',sans-serif;font-size:0.95rem;}
   input:focus{outline:none;border-color:var(--accent);}
+  label.chk{display:flex;align-items:center;gap:8px;margin:-6px 0 18px 0;text-transform:none;letter-spacing:0.02em;font-size:0.74rem;cursor:pointer;}
+  label.chk input{width:auto;margin:0;}
   button{width:100%;padding:12px;background:var(--accent);border:none;border-radius:5px;color:#121316;
     font-family:'IBM Plex Mono',monospace;font-size:0.78rem;letter-spacing:0.05em;text-transform:uppercase;
     font-weight:600;cursor:pointer;}
@@ -233,6 +237,7 @@ function loginPage({ slug, isAdmin, error }) {
       <input id="email" name="email" type="email" autocomplete="username" required autofocus>
       <label for="password">Password</label>
       <input id="password" name="password" type="password" autocomplete="current-password" required>
+      ${isAdmin ? "" : '<label class="chk"><input type="checkbox" name="change_password" value="1"> Change my password</label>'}
       <button type="submit">Log In</button>
     </form>
     <div class="hint">Internal review only &mdash; not public.</div>
@@ -259,7 +264,7 @@ function resetPage({ slug, email, error }) {
       <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required minlength="6">
       <button type="submit">Set Password &amp; Continue</button>
     </form>
-    <div class="hint">You're using a temporary password &mdash; pick your own to continue.</div>
+    <div class="hint">Pick a new password to continue &mdash; you'll use it next time you log in.</div>
     <script>
       var n=document.getElementById('new_password'), c=document.getElementById('confirm_password');
       n.addEventListener('keydown', function(ev){
@@ -298,12 +303,10 @@ async function renderAdminPage(env) {
     return r.creds.map((c) => {
       const a = (act.clients || {})[c.email] || {};
       let badge;
-      if (!c.mustReset) {
-        badge = a.passwordSetAt
-          ? `<span class="st ok">Password set ${escapeHtml(ago(a.passwordSetAt))}</span>`
-          : '<span class="st ok">Password set (before tracking began)</span>';
-      } else if (a.firstTempLoginAt) {
-        badge = `<span class="st warn">Logged in with temp password ${escapeHtml(ago(a.firstTempLoginAt))} &mdash; hasn't set a new one</span>`;
+      if (a.lastLoginAt) {
+        badge = `<span class="st ok">Logged in ${escapeHtml(ago(a.lastLoginAt))}</span>`;
+      } else if (a.priorLogin) {
+        badge = '<span class="st ok">Logged in (time not recorded)</span>';
       } else if (act.linkOpens) {
         badge = `<span class="st warn">Opened the link ${escapeHtml(ago(act.lastLinkOpenAt))} &mdash; hasn't logged in</span>`;
       } else {
@@ -384,8 +387,9 @@ async function renderAdminPage(env) {
     Activity tracking began 2026-10-02 &mdash; earlier visits weren't recorded. Times are Central. Your own admin views aren't counted, and bots/link-preview crawlers are filtered out. This page can lag up to a minute behind real activity.
   </div>
   <div class="hint">
-    To add or update a client's login:<br>
-    <code class="cmd">npx wrangler kv key put --binding=DRAFT_CREDENTIALS "&lt;slug&gt;" '[{"email":"person@example.com","password":"temp-password","mustReset":true}]'</code>
+    To add or update a client's login (simple passwords are fine &mdash; add <code>"mustReset":true</code> only if you ever want to force a change):<br>
+    <code class="cmd">npx wrangler kv key put --binding=DRAFT_CREDENTIALS "&lt;slug&gt;" '[{"email":"person@example.com","password":"easy-password"}]'</code>
+    Clients can pick their own password anytime by ticking "Change my password" on the login screen.
   </div>
 </body>
 </html>`, 200, []);
@@ -471,10 +475,11 @@ export default {
       }
 
       if (!isAdminRoute && match.scope === slug) {
-        ctx.waitUntil(logActivity(env, slug, match.mustReset ? "temp_login" : "login", { email, request }));
+        ctx.waitUntil(logActivity(env, slug, "login", { email, request }));
       }
 
-      if (match.mustReset) {
+      const wantsChange = form.get("change_password") === "1";
+      if (match.scope !== "*" && (match.mustReset || wantsChange)) {
         const resetCookie = await makeCookie({ scope: slug, email }, RESET_TTL_SECONDS, secret);
         return htmlResponse(resetPage({ slug, email }), 200, [
           `${RESET_COOKIE}=${resetCookie}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${RESET_TTL_SECONDS}`,
