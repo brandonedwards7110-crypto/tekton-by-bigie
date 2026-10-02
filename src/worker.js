@@ -1,5 +1,7 @@
 const SESSION_COOKIE = "tekton_auth";
 const RESET_COOKIE = "tekton_reset";
+const ME_COOKIE = "tekton_me"; // set on any device where the admin has logged in; its visits aren't counted as client activity
+const ME_TTL_SECONDS = 60 * 60 * 24 * 365;
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const RESET_TTL_SECONDS = 60 * 10; // 10 minutes to finish a password reset
 
@@ -98,6 +100,7 @@ function isHtmlNavigation(request, url) {
 
 async function logActivity(env, slug, type, { email, request }) {
   try {
+    if (getCookie(request, ME_COOKIE) === "1") return;
     const ua = request.headers.get("User-Agent") || "";
     if (isBotUA(ua)) return;
     const creds = await getCredentialsForSlug(env, slug);
@@ -286,6 +289,15 @@ function redirect(location, setCookies) {
   return new Response(null, { status: 303, headers });
 }
 
+const ME_COOKIE_VALUE = `${ME_COOKIE}=1; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${ME_TTL_SECONDS}`;
+
+function withMeCookie(response, request, session) {
+  if (!session || session.scope !== "*" || getCookie(request, ME_COOKIE) === "1") return response;
+  const r = new Response(response.body, response);
+  r.headers.append("Set-Cookie", ME_COOKIE_VALUE);
+  return r;
+}
+
 async function renderAdminPage(env) {
   const list = await env.DRAFT_CREDENTIALS.list();
   const rows = [];
@@ -384,7 +396,7 @@ async function renderAdminPage(env) {
     ${tableRows || '<tr><td colspan="4" class="muted">No client credentials set yet.</td></tr>'}
   </table>
   <div class="hint">
-    Activity tracking began 2026-10-02 &mdash; earlier visits weren't recorded. Times are Central. Your own admin views aren't counted, and bots/link-preview crawlers are filtered out. This page can lag up to a minute behind real activity.
+    Activity tracking began 2026-10-02 &mdash; earlier visits weren't recorded. Times are Central. Any phone or computer where you've logged in as admin is ignored automatically (log in with your admin email once on each device, then test freely). Bots/link-preview crawlers are filtered out too. This page can lag up to a minute behind real activity.
   </div>
   <div class="hint">
     To add or update a client's login (simple passwords are fine &mdash; add <code>"mustReset":true</code> only if you ever want to force a change):<br>
@@ -425,12 +437,12 @@ export default {
           }
           return redirect("/admin", []);
         }
-        return renderAdminPage(env);
+        return withMeCookie(await renderAdminPage(env), request, session);
       }
       if (session.scope === slug && request.method === "GET" && isHtmlNavigation(request, url)) {
         ctx.waitUntil(logActivity(env, slug, "view", { email: session.email, request }));
       }
-      return env.ASSETS.fetch(request);
+      return withMeCookie(await env.ASSETS.fetch(request), request, session);
     }
 
     if (request.method === "POST") {
@@ -487,9 +499,9 @@ export default {
       }
 
       const cookie = await makeCookie({ scope: match.scope, email }, SESSION_TTL_SECONDS, secret);
-      return redirect(url.pathname, [
-        `${SESSION_COOKIE}=${cookie}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`,
-      ]);
+      const loginCookies = [`${SESSION_COOKIE}=${cookie}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`];
+      if (match.scope === "*") loginCookies.push(ME_COOKIE_VALUE);
+      return redirect(url.pathname, loginCookies);
     }
 
     if (request.method === "GET" && !isAdminRoute && isHtmlNavigation(request, url)) {
