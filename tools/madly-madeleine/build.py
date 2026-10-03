@@ -15,6 +15,7 @@ ORIGIN = "https://tektonbybigie.com"        # becomes https://madlymadeleine.com
 
 NAME = "Madly Madeleine"
 PHONE, TEL = "(448) 238-2396", "+14482382396"
+EMAIL = "contact@madlymadeleine.com"   # listed on their own Facebook About page
 STREET, CITY, ZIP = "3906 US-98 #2", "Santa Rosa Beach", "32459"
 LAT, LNG = 30.3748913, -86.242683
 FB = "https://www.facebook.com/profile.php?id=61593156342905"
@@ -37,7 +38,7 @@ def ld(blocks):
 def biz_ld():
     return {
         "@context": "https://schema.org", "@type": ["CafeOrCoffeeShop", "Bakery"], "@id": ORIGIN + u("#business"),
-        "name": NAME, "url": ORIGIN + u(""), "telephone": "+1-448-238-2396", "image": OG_IMAGE,
+        "name": NAME, "url": ORIGIN + u(""), "telephone": "+1-448-238-2396", "email": EMAIL, "image": OG_IMAGE,
         "description": "French café and pâtisserie in Santa Rosa Beach, Florida: coffee, tea, cold drinks and French madeleines.",
         "servesCuisine": "French",
         "address": {"@type": "PostalAddress", "streetAddress": STREET, "addressLocality": CITY, "addressRegion": "FL", "postalCode": ZIP, "addressCountry": "US"},
@@ -115,7 +116,7 @@ def footer():
     <div>
       <h4>Madly Madeleine</h4>
       <p>Your little slice of France by the beach.</p>
-      <p>{e(STREET)}<br>{CITY}, FL {ZIP}<br><a href="tel:{TEL}">{PHONE}</a></p>
+      <p>{e(STREET)}<br>{CITY}, FL {ZIP}<br><a href="tel:{TEL}">{PHONE}</a><br><a href="mailto:{EMAIL}">{EMAIL}</a></p>
     </div>
     <div><h4>Explore</h4><ul><li><a href="{u()}">Home</a></li>{ln}</ul></div>
     <div><h4>Follow along</h4><ul><li><a href="{FB}" target="_blank" rel="noopener">Facebook</a></li><li><a href="{IG}" target="_blank" rel="noopener">Instagram</a></li><li><a href="{GMAPS}" target="_blank" rel="noopener">Google Maps</a></li></ul></div>
@@ -364,6 +365,7 @@ def visit():
     <ul class="info big">
       <li><b>Address</b><a href="{GMAPS}" target="_blank" rel="noopener">{e(STREET)}<br>{CITY}, FL {ZIP}</a></li>
       <li><b>Call</b><a href="tel:{TEL}">{PHONE}</a></li>
+      <li><b>Email</b><a href="mailto:{EMAIL}">{EMAIL}</a></li>
       <li><b>Hours</b><span>{PH('weekly hours: confirm with owner. Google currently shows a 10 AM opening')}</span></li>
       <li><b>Find us</b><span>On US Highway 98 in {CITY}, near La Canosa Blvd.</span></li>
       <li><b>Follow</b><span><a href="{IG}" target="_blank" rel="noopener">Instagram</a> &middot; <a href="{FB}" target="_blank" rel="noopener">Facebook</a></span></li>
