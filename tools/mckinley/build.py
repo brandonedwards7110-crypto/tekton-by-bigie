@@ -171,7 +171,7 @@ def service_page(s):
     if s["img"]:
         fig = f'<figure><img src="{u("assets/" + s["img"][0])}" alt="{e(s["img"][1])}" loading="lazy"><figcaption>{e(s["imgcap"])}</figcaption></figure>'
     areas = "".join(f'<a class="chip" href="{u(p)}">{e(n)}</a>' for n, p in AREA_LINKS)
-    body = page_hero(trail, e(s["h1"]), e(s["lede"]), facts=["Open 24 hours", "AL HVAC #" + LICENSE, "5.0 &#9733; on 39 Google reviews"])
+    body = page_hero(trail, e(s["h1"]), e(s["lede"]), facts=["Open 24 hours", "AL HVAC #" + LICENSE, "5.0 &#9733; on 42 Google reviews"])
     body += f"""<div class="wrap content-grid">
   <article class="prose">
     <h2>Signs you need {e(NEED[s['slug']])}</h2>
@@ -217,7 +217,7 @@ def services_hub():
 AREAS = [
     dict(slug="wetumpka", name="Wetumpka", drive="Home base", driveKm="Our shop is on Coosa River Pkwy", mi=None,
          intro="Wetumpka is home. Our shop is at 1102 Coosa River Pkwy, and Wetumpka, the Elmore County seat, is where most of our calls start.",
-         facts=[("Home base", "Our shop"), ("24 hrs", "Open any hour"), ("5.0 &#9733;", "39 Google reviews")],
+         facts=[("Home base", "Our shop"), ("24 hrs", "Open any hour"), ("5.0 &#9733;", "42 Google reviews")],
          quote=["morgan"], extra="Our shop is right here in Wetumpka, so you're as close to us as it gets."),
     dict(slug="millbrook", name="Millbrook", drive="17 min", mi="11.6 miles via AL-14 W",
          intro="We serve Millbrook and the surrounding Elmore County communities. It's about a 17 minute drive from our Wetumpka shop.",
@@ -325,10 +325,10 @@ def comfort_club():
 def reviews_page():
     path = "reviews/"
     trail = [HOME, ("Reviews", path)]
-    desc = "Read real McKinley Co. Heating & Cooling reviews: 5.0 stars on 39 Google reviews from Wetumpka, Millbrook, Montgomery and Lake Martin homeowners."
-    body = page_hero(trail, "Real reviews. Real customers.", "Swipe through screenshots taken straight from Google and Facebook.", facts=["&#9733; 5.0 &middot; 39 Google reviews"], ctas=False)
+    desc = "Read real McKinley Co. Heating & Cooling reviews: 5.0 stars on 42 Google reviews from Wetumpka, Millbrook, Montgomery and Lake Martin homeowners."
+    body = page_hero(trail, "Real reviews. Real customers.", "Swipe through screenshots taken straight from Google and Facebook.", facts=["&#9733; 5.0 &middot; 42 Google reviews"], ctas=False)
     body += f"""<section class="reviews" style="border-top:none"><div class="wrap">{carousel()}
-      <p class="reviews-link"><a class="btn btn-ghost" href="{GMAPS}" target="_blank" rel="noopener">Read all 39 Google reviews</a></p></div></section>
+      <p class="reviews-link"><a class="btn btn-ghost" href="{GMAPS}" target="_blank" rel="noopener">Read all 42 Google reviews</a></p></div></section>
     <section><div class="wrap prose" style="max-width:860px">
       <h2>What people keep saying</h2>
       {qs('morgan', 'charlene', 'andrew', 'brent', 'bo')}
@@ -448,7 +448,7 @@ def home_page():
           <a class="btn btn-ghost" href="tel:{TEL}">{PHONE_SVG}Call {PHONE}</a>
         </div>
         <div class="badges">
-          <span class="badge"><b>&#9733; 5.0</b> on Google &middot; 39 reviews</span>
+          <span class="badge"><b>&#9733; 5.0</b> on Google &middot; 42 reviews</span>
           <span class="badge">Licensed &middot; AL #{LICENSE}</span>
           <span class="badge">Open 24 hours</span>
         </div>
@@ -505,7 +505,7 @@ def home_page():
     <div class="reviews-head">
       <p class="eyebrow">Straight from your neighbors</p>
       <h2 class="section-title">Real reviews. <span class="grad-text">Real customers.</span></h2>
-      <div class="rating-pill"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 5.0 &middot; 39 Google reviews</div>
+      <div class="rating-pill"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 5.0 &middot; 42 Google reviews</div>
     </div>
     {carousel()}
     <p class="reviews-link"><a class="btn btn-ghost" href="{u('reviews/')}">More reviews</a></p>

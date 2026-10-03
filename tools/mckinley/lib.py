@@ -206,7 +206,7 @@ def biz_ld(full=True):
         "sameAs": [FB, IG, TT],
     }
     if full:
-        d["aggregateRating"] = {"@type": "AggregateRating", "ratingValue": "5.0", "reviewCount": "39"}
+        d["aggregateRating"] = {"@type": "AggregateRating", "ratingValue": "5.0", "reviewCount": "42"}
     return d
 
 
@@ -301,7 +301,7 @@ def aside(current=None):
     <p>Call or text any time. We're open 24 hours.</p>
     <a class="btn btn-primary" href="tel:{TEL}">{PHONE_SVG}{PHONE}</a>
     <a class="btn btn-ghost" href="{u('contact/')}">Request service</a>
-    <div class="aside-meta"><b>AL HVAC License #{LICENSE}</b><br>Licensed &middot; Insured &middot; Local<br>5.0 &#9733; on 39 Google reviews</div>
+    <div class="aside-meta"><b>AL HVAC License #{LICENSE}</b><br>Licensed &middot; Insured &middot; Local<br>5.0 &#9733; on 42 Google reviews</div>
   </div>
   <div class="aside-card"><h3>Services</h3><ul class="rel">{rel}</ul></div>
   <div class="aside-card"><h3>Where we work</h3><ul class="rel">{areas}</ul></div>
