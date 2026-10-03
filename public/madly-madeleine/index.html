@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Madly Madeleine — Tekton by Bigie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--accent:#C78593;--ink:#F5F3EE;--panel:#121316;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--panel);color:var(--ink);font-family:'Space Grotesk',sans-serif;min-height:100vh;}
+  a{color:inherit;text-decoration:none;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:28px 5vw;}
+  .nav-brand{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;letter-spacing:0.18em;color:#B9BAC0;text-transform:uppercase;}
+  .nav-back{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;letter-spacing:0.1em;color:#B9BAC0;text-transform:uppercase;}
+  .nav-back:hover{color:var(--ink);}
+  main{padding:20px 5vw 100px 5vw;max-width:1000px;margin:0 auto;}
+  h1{font-size:clamp(2rem,5vw,3rem);margin:0 0 6px 0;font-weight:700;}
+  .meta{font-family:'IBM Plex Mono',monospace;font-size:0.85rem;color:#8B8D94;margin-bottom:44px;}
+  .boxes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;}
+  .box{background:linear-gradient(180deg,#1D1F23 0%,#17191C 100%);border:1px solid #2C2E33;border-radius:8px;padding:28px;position:relative;overflow:hidden;}
+  .box.active{border-color:var(--boxcolor,var(--accent));}
+  .box::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--boxcolor,#3A3D43);}
+  .box.active::before{background:var(--boxcolor,var(--accent));}
+  .box-label{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--boxcolor,#8B8D94);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .box h2{margin:0 0 14px 0;font-size:1.3rem;}
+  .box p.desc{color:#B9BAC0;font-size:0.92rem;line-height:1.55;margin:0 0 20px 0;}
+  .box .cta{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:0.78rem;letter-spacing:0.05em;text-transform:uppercase;padding:10px 18px;border-radius:5px;border:1px solid var(--boxcolor,var(--accent));color:var(--boxcolor,var(--accent));}
+  .box.inactive .cta{border-color:#3A3D43;color:#5A5D63;}
+  .box .cta:hover{background:var(--boxcolor,var(--accent));color:#121316;}
+  .box.inactive{opacity:0.6;}
+  .caption{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:#6C6E75;margin-top:14px;line-height:1.6;}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-brand" href="https://bigie.us/">powered by bigie</a>
+  <a class="nav-back" href="/">&larr; tekton by bigie</a>
+</nav>
+<main>
+  <h1>Madly Madeleine</h1>
+  <div class="meta">Santa Rosa Beach, FL</div>
+  <div class="boxes">
+    <div class="box inactive">
+      <div class="box-label">Live</div>
+      <h2>No live site yet</h2>
+      <p class="desc">No live website yet -- the domain is parked on Wix with no site connected. Facebook, Instagram and Google only. Spec build ready for review.</p>
+      <span class="cta">Not live</span>
+    </div>
+    <a class="box active" style="--boxcolor:#C78593;" href="/madly-madeleine/draft/">
+      <div class="box-label">&#128274; Drafts</div>
+      <h2>Internal Review</h2>
+      <p class="desc">New build in progress &mdash; internal review only.</p>
+      <span class="cta">View Draft &rarr;</span>
+      <div class="caption">Internal review only &mdash; not public yet</div>
+    </a>
+  </div>
+</main>
+</body>
+</html>
