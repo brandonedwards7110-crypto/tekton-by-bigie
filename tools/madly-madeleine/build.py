@@ -199,7 +199,7 @@ def cta_band(h="Come say bonjour", t=f"{STREET}, {CITY}"):
 
 # ================================================================== FAQ (their own words, from their posts)
 FAQS = [
-    ("What is a madeleine?", "A madeleine is a small French cake baked in a traditional shell-shaped mold."),
+    ("What is a madeleine?", "A madeleine is a small French cake baked in its traditional shell-shaped mold. It is soft and buttery inside, lightly golden around the edges and recognized by the small hump that forms during baking."),
     ("Is a madeleine a cake or a cookie?", "It's a cake, not a cookie. A madeleine is a small French cake baked in a traditional shell-shaped mold."),
     ("Why the shell shape?", "The traditional mold gives each madeleine its signature shape and lightly golden edges."),
     ("What about the little hump?", "A well-baked madeleine rises in the center, creating its characteristic hump and soft interior."),
@@ -236,7 +236,7 @@ def home():
   <div>
     <p class="eyebrow">One shell at a time</p>
     <h2 class="section-title">Every madeleine is <em>piped by hand.</em></h2>
-    <p>Behind every little shell is a chef, <a href="{u('our-story/')}">Arnaud</a>, and a tray of molds filled one at a time.</p>
+    <p>Behind every little shell, there&rsquo;s a pair of hands. <a href="{u('our-story/')}">Arnaud</a> pipes each madeleine one at a time, the way it&rsquo;s done back home in France.</p>
     <p><a class="btn btn-ghost" href="{u('our-story/')}">Meet Arnaud</a></p>
   </div>
 </div></section>
@@ -294,7 +294,7 @@ def menu():
   <div class="split-grid tight">
     {photo('madeleine-and-coffee', 'A chocolate-glazed madeleine on a plate beside an espresso in a navy cup', 'round')}
     <div><p class="lede-dark">A proper espresso, hot tea and a little place to slow down. Enjoy a madeleine with coffee, with tea or as a special break during your day.</p>
-    <ul class="menu-list ph-list"><li>{PH('coffee & espresso drinks')}</li><li>{PH('teas')}</li></ul></div>
+    <ul class="menu-list ph-list"><li>{PH('coffee & espresso drinks: the owner confirmed a noisette on Facebook')}</li><li>{PH('teas')}</li></ul></div>
   </div>
 
   <h2 class="section-title">Cold <em>drinks</em></h2>
@@ -319,8 +319,10 @@ def story():
   {photo('arnaud', 'Arnaud, the chef at Madly Madeleine, in a black chef coat', 'round')}
   <div>
     <h2 class="section-title">One shell <em>at a time.</em></h2>
-    <p>Every madeleine at Madly Madeleine is piped by hand, one mold at a time, by Arnaud.</p>
-    <p class="note">{PH("Arnaud's story, in his own words: where he trained, what brought him to Santa Rosa Beach, why madeleines. Add once the owner shares it")}</p>
+    <blockquote class="story-quote">&ldquo;We left France, lived five years in Quebec, and came here on vacation. The Gulf Coast stole our hearts, so we stayed.&rdquo;</blockquote>
+    <p class="cite">&mdash; Madly Madeleine, in the opening-day reel on Instagram</p>
+    <p>Behind every little shell, there&rsquo;s a pair of hands. Arnaud pipes each madeleine one at a time, the way it&rsquo;s done back home in France. Then we pour the coffee, set the table and wait for you.</p>
+    <p class="note">{PH("Add the owners' names and a line about who 'we' is once confirmed")}</p>
   </div>
 </div></section>
 
@@ -346,6 +348,7 @@ def news():
   {photo('news-opening-graphic', 'Madly Madeleine announcement: Then it is your turn to slow down. Opening Wednesday, Sept 30', 'round', 'Our opening announcement')}
   <div>
     <h2 class="section-title">Opening day: <em>Wednesday, Sept 30</em></h2>
+    <p><strong>Doors open at 9 AM.</strong> &ldquo;A little corner of France opens on US 98: madeleines in every flavor, good coffee and time to slow down. Come say bonjour.&rdquo;</p>
     <p>Madly Madeleine opened its doors at {e(STREET)} in {CITY}: a French café and pâtisserie with coffee, tea, cold drinks and French madeleines.</p>
     <p>Follow along on <a href="{IG}" target="_blank" rel="noopener">Instagram</a> and <a href="{FB}" target="_blank" rel="noopener">Facebook</a> to see what&rsquo;s fresh.</p>
     <p class="note">{PH('Future posts go here: new flavors, seasonal specials, events')}</p>
@@ -366,7 +369,7 @@ def visit():
       <li><b>Address</b><a href="{GMAPS}" target="_blank" rel="noopener">{e(STREET)}<br>{CITY}, FL {ZIP}</a></li>
       <li><b>Call</b><a href="tel:{TEL}">{PHONE}</a></li>
       <li><b>Email</b><a href="mailto:{EMAIL}">{EMAIL}</a></li>
-      <li><b>Hours</b><span>{PH('weekly hours: confirm with owner. Google currently shows a 10 AM opening')}</span></li>
+      <li><b>Hours</b><span>{PH('weekly hours: confirm with owner. Opening day was 9 AM; Google now shows a 10 AM opening and closed Sun/Mon')}</span></li>
       <li><b>Find us</b><span>On US Highway 98 in {CITY}, near La Canosa Blvd.</span></li>
       <li><b>Follow</b><span><a href="{IG}" target="_blank" rel="noopener">Instagram</a> &middot; <a href="{FB}" target="_blank" rel="noopener">Facebook</a></span></li>
     </ul>

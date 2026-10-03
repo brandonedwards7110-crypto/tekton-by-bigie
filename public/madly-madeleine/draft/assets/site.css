@@ -158,3 +158,6 @@ input,textarea{width:100%;font:inherit;padding:12px 14px;border-radius:12px;bord
 .ghost-bar a{color:inherit;text-decoration:underline;text-decoration-color:rgba(255,255,255,.5);text-underline-offset:2px}
 @media(max-width:520px){.ghost-bar p{font-size:.64rem;padding:0 10px;text-align:center}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.cf-item,.btn,.card{transition:none}}
+
+.story-quote{margin:0 0 6px;font-family:"Cormorant Garamond",serif;font-style:italic;font-size:1.7rem;line-height:1.25;color:var(--rose-dark);border-left:3px solid var(--rose);padding-left:18px}
+.cite{font-size:.8rem;color:var(--muted);margin:0 0 18px 21px}
