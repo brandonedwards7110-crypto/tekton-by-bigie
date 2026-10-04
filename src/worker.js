@@ -407,8 +407,21 @@ async function renderAdminPage(env) {
 </html>`, 200, []);
 }
 
-export default {
-  async fetch(request, env, ctx) {
+// Security: always use HTTPS, and add standard protective headers to every response.
+const SECURITY_HEADERS = {
+  "Strict-Transport-Security": "max-age=31536000",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "X-Frame-Options": "SAMEORIGIN",
+};
+
+function withSecurityHeaders(response) {
+  const r = new Response(response.body, response);
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) r.headers.set(k, v);
+  return r;
+}
+
+async function handleRequest(request, env, ctx) {
     const url = new URL(request.url);
     const segments = url.pathname.split("/").filter(Boolean);
     const isAdminRoute = segments[0] === "admin";
@@ -508,5 +521,16 @@ export default {
       ctx.waitUntil(logActivity(env, slug, "link_opened", { request }));
     }
     return htmlResponse(loginPage({ slug, isAdmin: isAdminRoute }), 401, []);
+}
+
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const isLocal = url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname.endsWith(".localhost");
+    if (url.protocol === "http:" && !isLocal) {
+      url.protocol = "https:";
+      return Response.redirect(url.toString(), 301);
+    }
+    return withSecurityHeaders(await handleRequest(request, env, ctx));
   },
 };
