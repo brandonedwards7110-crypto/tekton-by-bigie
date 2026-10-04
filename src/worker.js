@@ -73,6 +73,85 @@ async function getAdminCredential(env) {
   return await env.DRAFT_CREDENTIALS.get("_admin", { type: "json" });
 }
 
+// ---- password storage + login lockout ----
+// Temp passwords Brandon hands out stay readable (he has to send them). Anything an owner (or the admin) sets
+// themselves is stored only as a salted PBKDF2 hash, never as text. Logins lock after repeated wrong tries.
+const PBKDF2_ITER = 100000;
+const LOCK_MAX_FAILS = 5;
+const LOCK_SECONDS = 15 * 60;
+
+function bytesToHex(buf) { return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join(""); }
+function hexToBytes(hex) {
+  const out = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.substr(i * 2, 2), 16);
+  return out;
+}
+async function pbkdf2Hex(password, saltHex, iter) {
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: hexToBytes(saltHex), iterations: iter }, key, 256);
+  return bytesToHex(bits);
+}
+function safeEqual(a, b) {
+  a = String(a); b = String(b);
+  let diff = a.length ^ b.length;
+  const n = Math.max(a.length, b.length);
+  for (let i = 0; i < n; i++) diff |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  return diff === 0;
+}
+async function newPasswordRecord(password) {
+  const salt = bytesToHex(crypto.getRandomValues(new Uint8Array(16)));
+  return { hash: await pbkdf2Hex(password, salt, PBKDF2_ITER), salt, iter: PBKDF2_ITER };
+}
+async function passwordMatches(cred, password) {
+  if (!cred) return false;
+  if (cred.hash && cred.salt) return safeEqual(await pbkdf2Hex(password, cred.salt, cred.iter || PBKDF2_ITER), cred.hash);
+  if (typeof cred.password === "string") return safeEqual(cred.password, password);
+  return false;
+}
+function clientIp(request) { return request.headers.get("CF-Connecting-IP") || "unknown"; }
+
+// One tiny Durable Object per (login page + visitor IP) counts attempts exactly (KV can serve stale values, so it
+// can't be used for this). Each attempt is counted BEFORE the password is checked, so a burst of parallel guesses
+// can't slip through; a correct login resets the count. If the guard is ever unavailable we fail open (log in
+// normally) rather than lock Brandon out of his own admin.
+async function guardCall(env, slug, request, action) {
+  try {
+    if (!env.LOGIN_GUARD) return { locked: false };
+    const stub = env.LOGIN_GUARD.get(env.LOGIN_GUARD.idFromName(slug + ":" + clientIp(request)));
+    const r = await stub.fetch("https://guard/" + action);
+    return await r.json();
+  } catch (e) {
+    return { locked: false };
+  }
+}
+
+export class LoginGuard {
+  constructor(state) { this.state = state; }
+  async fetch(request) {
+    const action = new URL(request.url).pathname.slice(1);
+    const now = Date.now();
+    let rec = (await this.state.storage.get("rec")) || { fails: 0, lockedUntil: 0, last: 0 };
+    if (rec.lockedUntil && now >= rec.lockedUntil) rec = { fails: 0, lockedUntil: 0, last: 0 };
+    if (!rec.lockedUntil && rec.fails && now - rec.last > LOCK_SECONDS * 1000) rec = { fails: 0, lockedUntil: 0, last: 0 };
+    let locked = false;
+    if (action === "attempt") {
+      if (rec.lockedUntil && now < rec.lockedUntil) {
+        locked = true;
+      } else {
+        rec.fails += 1;
+        rec.last = now;
+        if (rec.fails > LOCK_MAX_FAILS) { rec.lockedUntil = now + LOCK_SECONDS * 1000; locked = true; }
+        await this.state.storage.put("rec", rec);
+      }
+    } else if (action === "ok") {
+      await this.state.storage.delete("rec");
+      rec = { fails: 0, lockedUntil: 0, last: 0 };
+    }
+    return new Response(JSON.stringify({ locked, fails: rec.fails, retryAfterSeconds: locked ? Math.ceil((rec.lockedUntil - now) / 1000) : 0 }),
+      { headers: { "content-type": "application/json" } });
+  }
+}
+
 // ---- client activity tracking (shown on /admin) ----
 const ACTIVITY_PREFIX = "_activity:";
 const MAX_EVENTS = 60;
@@ -175,13 +254,14 @@ const EVENT_LABELS = {
 
 async function findMatch(env, slug, email, password) {
   const admin = await getAdminCredential(env);
-  if (admin && admin.email === email && admin.password === password) {
+  if (admin && admin.email === email && (await passwordMatches(admin, password))) {
     return { scope: "*", email };
   }
   const creds = await getCredentialsForSlug(env, slug);
-  const idx = creds.findIndex((c) => c.email === email && c.password === password);
-  if (idx !== -1) {
-    return { scope: slug, email, mustReset: !!creds[idx].mustReset, creds, idx };
+  for (let idx = 0; idx < creds.length; idx++) {
+    if (creds[idx].email === email && (await passwordMatches(creds[idx], password))) {
+      return { scope: slug, email, mustReset: !!creds[idx].mustReset, creds, idx };
+    }
   }
   return null;
 }
@@ -302,7 +382,7 @@ async function renderAdminPage(env) {
   const list = await env.DRAFT_CREDENTIALS.list();
   const rows = [];
   for (const key of list.keys) {
-    if (key.name === "_admin" || key.name.startsWith(ACTIVITY_PREFIX)) continue;
+    if (key.name.startsWith("_")) continue;   // _admin, _activity:*, _fail:* are internal
     const val = await env.DRAFT_CREDENTIALS.get(key.name, { type: "json" });
     const creds = Array.isArray(val) ? val : [];
     const activity = (await env.DRAFT_CREDENTIALS.get(ACTIVITY_PREFIX + key.name, { type: "json" })) || {};
@@ -348,7 +428,7 @@ async function renderAdminPage(env) {
     <tr>
       <td>${escapeHtml(r.slug)}</td>
       <td>${r.creds.length === 0 ? '<span class="muted">none</span>' : r.creds.map((c) =>
-        `${escapeHtml(c.email)} / <code>${escapeHtml(c.password)}</code>${c.mustReset ? ' <span class="pending">(temp, needs reset)</span>' : ""}`
+        `${escapeHtml(c.email)} / ${c.hash ? '<span class="pending">(changed by owner &mdash; not shown)</span>' : "<code>" + escapeHtml(c.password || "") + "</code>"}${c.mustReset ? ' <span class="pending">(temp, needs reset)</span>' : ""}`
       ).join("<br>")}</td>
       <td>${statusCell(r)}</td>
       <td>${activityCell(r)}</td>
@@ -480,7 +560,7 @@ async function handleRequest(request, env, ctx) {
         if (idx === -1) {
           return htmlResponse(loginPage({ slug, isAdmin: isAdminRoute, error: "Account not found. Log in again." }), 400, []);
         }
-        creds[idx] = { email: creds[idx].email, password: newPassword, mustReset: false };
+        creds[idx] = { email: creds[idx].email, ...(await newPasswordRecord(newPassword)), mustReset: false, changedByOwner: true, changedAt: Date.now() };
         await env.DRAFT_CREDENTIALS.put(slug, JSON.stringify(creds));
         ctx.waitUntil(logActivity(env, slug, "password_set", { email: resetPayload.email, request }));
         const cookie = await makeCookie({ scope: slug, email: resetPayload.email }, SESSION_TTL_SECONDS, secret);
@@ -492,6 +572,10 @@ async function handleRequest(request, env, ctx) {
 
       const email = String(form.get("email") || "").trim();
       const password = String(form.get("password") || "");
+      const guard = await guardCall(env, slug, request, "attempt");
+      if (guard.locked) {
+        return htmlResponse(loginPage({ slug, isAdmin: isAdminRoute, error: "Too many wrong tries. Please wait 15 minutes, then try again." }), 429, []);
+      }
       const match = await findMatch(env, slug, email, password);
 
       if (!match) {
@@ -499,6 +583,7 @@ async function handleRequest(request, env, ctx) {
         return htmlResponse(loginPage({ slug, isAdmin: isAdminRoute, error: "Invalid email or password." }), 401, []);
       }
 
+      ctx.waitUntil(guardCall(env, slug, request, "ok"));
       if (!isAdminRoute && match.scope === slug) {
         ctx.waitUntil(logActivity(env, slug, "login", { email, request }));
       }

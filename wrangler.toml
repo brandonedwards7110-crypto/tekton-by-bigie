@@ -12,6 +12,14 @@ routes = [
 binding = "DRAFT_CREDENTIALS"
 id = "89b17f1d3a894d84a5612ad0b011a815"
 
+[[durable_objects.bindings]]
+name = "LOGIN_GUARD"
+class_name = "LoginGuard"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["LoginGuard"]
+
 [assets]
 directory = "./public"
 binding = "ASSETS"
