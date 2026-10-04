@@ -4,6 +4,9 @@ const ME_COOKIE = "tekton_me"; // set on any device where the admin has logged i
 const ME_TTL_SECONDS = 60 * 60 * 24 * 365;
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const RESET_TTL_SECONDS = 60 * 10; // 10 minutes to finish a password reset
+const RESET_LINK_TTL_SECONDS = 60 * 30; // emailed "forgot password" links work once, for 30 minutes
+const SITE_ORIGIN = "https://tektonbybigie.com";
+const MAIL_FROM = "no-reply@tektonbybigie.com";
 
 function b64urlEncode(str) {
   return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -125,11 +128,103 @@ async function guardCall(env, slug, request, action) {
   }
 }
 
+// ---- "Forgot password" by email ----
+// A reset link is a random 256-bit token. Only its SHA-256 lives server-side, inside a Durable Object named after it
+// (strongly consistent, so the link really works once; KV could serve a stale copy). Requests to send a link are
+// throttled per email address and per visitor IP so nobody can use the form to flood an owner's inbox.
+async function sha256Hex(s) {
+  return bytesToHex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)));
+}
+function guardStub(env, name) { return env.LOGIN_GUARD.get(env.LOGIN_GUARD.idFromName(name)); }
+
+// Fails CLOSED: if the throttle can't be reached we don't send mail.
+async function forgotAllowed(env, name, max, windowSeconds) {
+  try {
+    const r = await guardStub(env, name).fetch(`https://guard/forgot_hit?max=${max}&window=${windowSeconds}`);
+    return (await r.json()).allowed === true;
+  } catch (e) {
+    return false;
+  }
+}
+
+async function resetTokenCall(env, token, action, body) {
+  const stub = guardStub(env, "reset:" + (await sha256Hex(token)));
+  const r = await stub.fetch("https://guard/" + action, body ? { method: "POST", body: JSON.stringify(body) } : undefined);
+  return await r.json();
+}
+async function peekResetToken(env, token) {
+  try { return token ? await resetTokenCall(env, token, "reset_peek") : { valid: false }; } catch (e) { return { valid: false }; }
+}
+async function takeResetToken(env, token) {
+  try { return token ? await resetTokenCall(env, token, "reset_take") : { valid: false }; } catch (e) { return { valid: false }; }
+}
+
+async function sendResetEmail(env, to, link) {
+  const mins = RESET_LINK_TTL_SECONDS / 60;
+  const text = `Someone asked to reset the password for your Tekton by Bigie draft preview.\n\n` +
+    `Set a new password here (the link works once and expires in ${mins} minutes):\n${link}\n\n` +
+    `If you didn't ask for this, ignore this email. Your password stays the same.\n\n— Tekton by Bigie`;
+  const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;color:#222;max-width:480px">` +
+    `<p>Someone asked to reset the password for your Tekton by Bigie draft preview.</p>` +
+    `<p><a href="${escapeHtml(link)}" style="display:inline-block;background:#C97A3E;color:#121316;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:5px">Set a new password</a></p>` +
+    `<p style="color:#555;font-size:13px">The link works once and expires in ${mins} minutes. If the button doesn't work, paste this into your browser:<br>${escapeHtml(link)}</p>` +
+    `<p style="color:#555;font-size:13px">If you didn't ask for this, ignore this email. Your password stays the same.</p>` +
+    `<p style="color:#888;font-size:12px">Tekton by Bigie</p></div>`;
+  return env.EMAIL.send({ from: MAIL_FROM, to, subject: "Reset your password — Tekton by Bigie", html, text });
+}
+
+// Runs after the response is already sent, so a real address and an unknown one look identical (no guessing who has access).
+async function processForgotRequest(env, request, slug, pathname, emailInput) {
+  try {
+    if (!env.EMAIL || !env.LOGIN_GUARD) return;
+    const email = String(emailInput || "").trim().toLowerCase().slice(0, 120);
+    if (!email.includes("@")) return;
+    if (!(await forgotAllowed(env, "forgotip:" + clientIp(request), 10, 3600))) return;
+    const creds = await getCredentialsForSlug(env, slug);
+    const cred = creds.find((c) => String(c.email || "").toLowerCase() === email);
+    if (!cred) return;
+    if (!(await forgotAllowed(env, "forgot:" + slug + ":" + email, 3, 3600))) return;
+    const token = bytesToHex(crypto.getRandomValues(new Uint8Array(32)));
+    await resetTokenCall(env, token, "reset_put", { slug, email: cred.email, exp: Date.now() + RESET_LINK_TTL_SECONDS * 1000 });
+    const link = `${SITE_ORIGIN}${pathname}?reset=${token}`;
+    await sendResetEmail(env, cred.email, link);
+    await logActivity(env, slug, "reset_requested", { email: cred.email, request });
+  } catch (e) {
+    console.error("forgot-password email failed:", e && e.code, e && e.message);
+  }
+}
+
 export class LoginGuard {
   constructor(state) { this.state = state; }
+  async alarm() { await this.state.storage.deleteAll(); } // expired reset tokens / throttle counters clean themselves up
+  async handleForgot(action, request, now) {
+    const json = (o) => new Response(JSON.stringify(o), { headers: { "content-type": "application/json" } });
+    const url = new URL(request.url);
+    if (action === "forgot_hit") {
+      const max = Number(url.searchParams.get("max")) || 3;
+      const windowMs = (Number(url.searchParams.get("window")) || 3600) * 1000;
+      const hits = ((await this.state.storage.get("hits")) || []).filter((t) => now - t < windowMs);
+      const allowed = hits.length < max;
+      if (allowed) hits.push(now);
+      await this.state.storage.put("hits", hits);
+      await this.state.storage.setAlarm(now + windowMs + 1000);
+      return json({ allowed });
+    }
+    if (action === "reset_put") {
+      const rec = await request.json();
+      await this.state.storage.put("reset", rec);
+      await this.state.storage.setAlarm(rec.exp + 1000);
+      return json({ ok: true });
+    }
+    const rec = await this.state.storage.get("reset");
+    if (!rec || rec.exp < now) { await this.state.storage.deleteAll(); return json({ valid: false }); }
+    if (action === "reset_take") await this.state.storage.deleteAll(); // single use
+    return json({ valid: true, slug: rec.slug, email: rec.email });
+  }
   async fetch(request) {
     const action = new URL(request.url).pathname.slice(1);
     const now = Date.now();
+    if (action === "forgot_hit" || action.startsWith("reset_")) return this.handleForgot(action, request, now);
     let rec = (await this.state.storage.get("rec")) || { fails: 0, lockedUntil: 0, last: 0 };
     if (rec.lockedUntil && now >= rec.lockedUntil) rec = { fails: 0, lockedUntil: 0, last: 0 };
     if (!rec.lockedUntil && rec.fails && now - rec.last > LOCK_SECONDS * 1000) rec = { fails: 0, lockedUntil: 0, last: 0 };
@@ -248,6 +343,7 @@ const EVENT_LABELS = {
   failed_login: "Failed login attempt",
   temp_login: "Logged in",
   password_set: "Changed their password",
+  reset_requested: "Asked for a password reset email",
   login: "Logged in",
   view: "Viewed the draft",
 };
@@ -299,6 +395,9 @@ function pageShell(title, bodyHtml) {
   .error{background:rgba(201,60,60,0.12);border:1px solid rgba(201,60,60,0.4);color:#E88;
     padding:10px 12px;border-radius:5px;font-size:0.85rem;margin-bottom:18px;}
   .hint{font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:#6C6E75;margin-top:16px;line-height:1.6;}
+  .hint a{color:var(--accent);}
+  .ok{background:rgba(80,170,110,0.12);border:1px solid rgba(80,170,110,0.4);color:#9ED8B0;
+    padding:10px 12px;border-radius:5px;font-size:0.85rem;margin-bottom:18px;line-height:1.5;}
 </style>
 </head>
 <body>
@@ -323,6 +422,7 @@ function loginPage({ slug, isAdmin, error }) {
       ${isAdmin ? "" : '<label class="chk"><input type="checkbox" name="change_password" value="1"> Change my password</label>'}
       <button type="submit">Log In</button>
     </form>
+    ${isAdmin ? "" : '<div class="hint"><a href="?forgot=1">Forgot password?</a></div>'}
     <div class="hint">Internal review only &mdash; not public.</div>
     <script>
       var e=document.getElementById('email'), p=document.getElementById('password');
@@ -333,12 +433,36 @@ function loginPage({ slug, isAdmin, error }) {
   `);
 }
 
-function resetPage({ slug, email, error }) {
+function forgotPage({ error }) {
+  return pageShell("Forgot Password", `
+    <h1>Forgot your password?</h1>
+    ${error ? `<div class="error">${escapeHtml(error)}</div>` : ""}
+    <form method="POST">
+      <input type="hidden" name="action" value="forgot">
+      <label for="email">Your email</label>
+      <input id="email" name="email" type="email" autocomplete="username" required autofocus>
+      <button type="submit">Email Me a Reset Link</button>
+    </form>
+    <div class="hint"><a href="./">Back to log in</a></div>
+  `);
+}
+
+function forgotSentPage() {
+  return pageShell("Check Your Email", `
+    <h1>Check your email</h1>
+    <div class="ok">If that address has access to this preview, a reset link is on its way. It can take a minute &mdash; check your spam folder too. The link works once and expires in ${RESET_LINK_TTL_SECONDS / 60} minutes.</div>
+    <div class="hint"><a href="./">Back to log in</a></div>
+  `);
+}
+
+// token is set when the owner arrived from an emailed reset link; otherwise this is the signed-cookie flow (temp password / "Change my password").
+function resetPage({ slug, email, error, token }) {
   return pageShell("Set a New Password", `
     <h1>Set a New Password</h1>
     ${error ? `<div class="error">${escapeHtml(error)}</div>` : ""}
     <form method="POST">
-      <input type="hidden" name="action" value="set_password">
+      <input type="hidden" name="action" value="${token ? "reset_with_token" : "set_password"}">
+      ${token ? `<input type="hidden" name="token" value="${escapeHtml(token)}">` : ""}
       <label>Email</label>
       <input type="email" value="${escapeHtml(email)}" disabled>
       <label for="new_password">New Password</label>
@@ -542,6 +666,40 @@ async function handleRequest(request, env, ctx) {
       const form = await request.formData();
       const action = form.get("action");
 
+      if (action === "forgot" && !isAdminRoute) {
+        // Same answer whether or not the address has access; the work happens after we respond.
+        ctx.waitUntil(processForgotRequest(env, request, slug, url.pathname, form.get("email")));
+        return htmlResponse(forgotSentPage(), 200, []);
+      }
+
+      if (action === "reset_with_token" && !isAdminRoute) {
+        const token = String(form.get("token") || "");
+        const expired = () => htmlResponse(loginPage({ slug, isAdmin: false, error: "That reset link expired or was already used. Tap \"Forgot password?\" to get a new one." }), 401, []);
+        const info = await peekResetToken(env, token);
+        if (!info.valid || info.slug !== slug) return expired();
+        const newPassword = String(form.get("new_password") || "");
+        const confirmPassword = String(form.get("confirm_password") || "");
+        if (newPassword.length < 6) {
+          return htmlResponse(resetPage({ slug, email: info.email, token, error: "Password must be at least 6 characters." }), 400, []);
+        }
+        if (newPassword !== confirmPassword) {
+          return htmlResponse(resetPage({ slug, email: info.email, token, error: "Passwords don't match." }), 400, []);
+        }
+        const taken = await takeResetToken(env, token); // single use: only one request can win this
+        if (!taken.valid || taken.slug !== slug) return expired();
+        const creds = await getCredentialsForSlug(env, slug);
+        const idx = creds.findIndex((c) => c.email === info.email);
+        if (idx === -1) {
+          return htmlResponse(loginPage({ slug, isAdmin: false, error: "Account not found. Ask Brandon for help." }), 400, []);
+        }
+        creds[idx] = { email: creds[idx].email, ...(await newPasswordRecord(newPassword)), mustReset: false, changedByOwner: true, changedAt: Date.now() };
+        await env.DRAFT_CREDENTIALS.put(slug, JSON.stringify(creds));
+        ctx.waitUntil(guardCall(env, slug, request, "ok"));
+        ctx.waitUntil(logActivity(env, slug, "password_set", { email: info.email, request }));
+        const cookie = await makeCookie({ scope: slug, email: info.email }, SESSION_TTL_SECONDS, secret);
+        return redirect(url.pathname, [`${SESSION_COOKIE}=${cookie}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`]);
+      }
+
       if (action === "set_password") {
         const resetPayload = await verifyCookie(getCookie(request, RESET_COOKIE), secret);
         if (!resetPayload || resetPayload.scope !== slug) {
@@ -602,6 +760,16 @@ async function handleRequest(request, env, ctx) {
       return redirect(url.pathname, loginCookies);
     }
 
+    if (request.method === "GET" && !isAdminRoute) {
+      if (url.searchParams.has("forgot")) return htmlResponse(forgotPage({}), 200, []);
+      const token = url.searchParams.get("reset");
+      if (token) {
+        // Only looks the token up (doesn't use it up) so an email link-scanner can't burn the link before the owner clicks it.
+        const info = await peekResetToken(env, token);
+        if (info.valid && info.slug === slug) return htmlResponse(resetPage({ slug, email: info.email, token }), 200, []);
+        return htmlResponse(loginPage({ slug, isAdmin: false, error: "That reset link expired or was already used. Tap \"Forgot password?\" to get a new one." }), 401, []);
+      }
+    }
     if (request.method === "GET" && !isAdminRoute && isHtmlNavigation(request, url)) {
       ctx.waitUntil(logActivity(env, slug, "link_opened", { request }));
     }

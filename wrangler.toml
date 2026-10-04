@@ -16,6 +16,9 @@ id = "89b17f1d3a894d84a5612ad0b011a815"
 name = "LOGIN_GUARD"
 class_name = "LoginGuard"
 
+[[send_email]]
+name = "EMAIL"
+
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["LoginGuard"]
