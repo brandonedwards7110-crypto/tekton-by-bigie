@@ -179,6 +179,7 @@ def service_page(s):
     <h2>What we do</h2>
     {tick(s['does'])}
     {fig}
+    {photo_slot('photos from your ' + e(s['name']) + ' jobs go here: the work itself, the equipment, your crew. Send a few and they will show up on this page.')}
     <h2>What to expect</h2>
     {steps(s['steps'])}
     <h2>What customers say</h2>
@@ -248,6 +249,7 @@ def area_page(a):
     <div class="fact-row">{facts}</div>
     <p style="font-size:.78rem;color:var(--muted)">Drive times are from our shop at {e(STREET)}, Wetumpka, per Google Maps with usual traffic.</p>
     <p>{e(a['extra'])}</p>
+    {photo_slot('photos of jobs you have done in ' + e(a['name']) + ' go here, with the town named. Send a few and they will show up on this page.')}
     <h2>HVAC services in {e(a['name'])}</h2>
     <ul class="rel">{svc}</ul>
     <h2>{e(a.get('qhead', 'What River Region customers say'))}</h2>
@@ -350,6 +352,7 @@ def about_page():
     <p>When your air goes out in an Alabama summer, you want someone who shows up fast, tells you the truth, and charges a fair price. That's the whole business.</p>
     {tick(["Fast response: customers tell us we've been out within 15 minutes on a Sunday and at 8 p.m.", "Honest answers: we diagnose it, explain it clearly, and fix what's actually broken", "Fair prices: customers call our pricing reasonable", "Licensed: Alabama HVAC license #" + LICENSE])}
     <figure><img src="{u('assets/duct-work-clean.png')}" alt="McKinley Co. technician working on ductwork outside a home" loading="lazy"><figcaption>On the job across the River Region.</figcaption></figure>
+    {photo_slot('a photo of you and your crew goes here.')}
     <h2>What we do</h2>
     <p>We handle <a href="{u('services/ac-repair/')}">A/C repair</a>, <a href="{u('services/heating-furnace-repair/')}">heating and furnace repair</a>, <a href="{u('services/new-hvac-systems/')}">new system installs</a>, <a href="{u('services/maintenance-tune-ups/')}">maintenance</a>, <a href="{u('services/duct-work/')}">duct work</a> and <a href="{u('services/emergency-hvac/')}">24-hour emergency service</a>, for homeowners in <a href="{u('areas/wetumpka/')}">Wetumpka</a>, <a href="{u('areas/millbrook/')}">Millbrook</a>, <a href="{u('areas/montgomery/')}">Montgomery</a> and around <a href="{u('areas/lake-martin/')}">Lake Martin</a>.</p>
     <h2>What customers say</h2>

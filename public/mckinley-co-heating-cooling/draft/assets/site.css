@@ -226,6 +226,7 @@
   input, select, textarea { width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; color: var(--text); font-family: inherit; font-size: 0.95rem; }
   input:focus, select:focus, textarea:focus { outline: none; border-color: var(--flame); }
   textarea { resize: vertical; }
+  .photo-slot { border: 1.5px dashed rgba(255,255,255,0.24); border-radius: 12px; padding: 22px 20px; margin: 18px 0 26px; text-align: center; background: rgba(255,255,255,0.025); color: var(--muted); font-size: 0.86rem; line-height: 1.6; }
   .form-note { font-size: 0.74rem; color: rgba(243,241,238,0.4); margin-top: 14px; line-height: 1.6; }
   @media (max-width: 860px) { .contact-grid { grid-template-columns: 1fr; } }
 

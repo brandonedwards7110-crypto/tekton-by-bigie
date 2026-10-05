@@ -16,6 +16,18 @@ GMAPS = "https://www.google.com/maps/search/McKinley+Co+Heating+%26+Cooling+Wetu
 OG_IMAGE = ORIGIN + BASE + "assets/trucks-hero-clean.png"
 
 
+# Draft-only notes for the owner ("[Draft preview ...]"). Set DRAFT_NOTES = False when the site goes live, and also remove the
+# two form-note lines (contact + careers) -- grep the output for "Draft preview" to be sure none are left.
+DRAFT_NOTES = True
+
+
+def photo_slot(text):
+    """A dashed 'photo goes here' box that tells the owner exactly what to send. Shown only while DRAFT_NOTES is on."""
+    if not DRAFT_NOTES:
+        return ""
+    return f'<div class="photo-slot">[Draft preview &mdash; {text}]</div>'
+
+
 def e(s):
     return html.escape(s, quote=True)
 
