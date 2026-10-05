@@ -139,7 +139,7 @@ def footer():
         <p>Locally owned HVAC sales, service and installation.</p>
         <p>{e(STREET)}<br>Wetumpka, AL 36092<br>Open 24 hours</p>
         <p><a href="tel:{TEL}">{PHONE}</a><br><a href="mailto:{EMAIL}">{EMAIL}</a></p>
-        <p>Licensed &middot; Insured &middot; Local &middot; AL HVAC #{LICENSE}</p>
+        <p>Licensed &middot; Local &middot; AL HVAC #{LICENSE}</p>
       </div>
       <div><h4>Services</h4><ul>{svc}</ul></div>
       <div><h4>Service area</h4><ul>{areas}<li><a href="{u('areas/')}">All areas</a></li></ul></div>
@@ -301,7 +301,7 @@ def aside(current=None):
     <p>Call or text any time. We're open 24 hours.</p>
     <a class="btn btn-primary" href="tel:{TEL}">{PHONE_SVG}{PHONE}</a>
     <a class="btn btn-ghost" href="{u('contact/')}">Request service</a>
-    <div class="aside-meta"><b>AL HVAC License #{LICENSE}</b><br>Licensed &middot; Insured &middot; Local<br>5.0 &#9733; on 42 Google reviews</div>
+    <div class="aside-meta"><b>AL HVAC License #{LICENSE}</b><br>Licensed &middot; Local<br>5.0 &#9733; on 42 Google reviews</div>
   </div>
   <div class="aside-card"><h3>Services</h3><ul class="rel">{rel}</ul></div>
   <div class="aside-card"><h3>Where we work</h3><ul class="rel">{areas}</ul></div>

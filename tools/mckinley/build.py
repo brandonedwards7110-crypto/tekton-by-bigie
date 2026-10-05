@@ -348,7 +348,7 @@ def about_page():
   <article class="prose">
     <h2>How we work</h2>
     <p>When your air goes out in an Alabama summer, you want someone who shows up fast, tells you the truth, and charges a fair price. That's the whole business.</p>
-    {tick(["Fast response: customers tell us we've been out within 15 minutes on a Sunday and at 8 p.m.", "Honest answers: we diagnose it, explain it clearly, and fix what's actually broken", "Fair prices: customers call our pricing reasonable", "Licensed and insured: Alabama HVAC license #" + LICENSE])}
+    {tick(["Fast response: customers tell us we've been out within 15 minutes on a Sunday and at 8 p.m.", "Honest answers: we diagnose it, explain it clearly, and fix what's actually broken", "Fair prices: customers call our pricing reasonable", "Licensed: Alabama HVAC license #" + LICENSE])}
     <figure><img src="{u('assets/duct-work-clean.png')}" alt="McKinley Co. technician working on ductwork outside a home" loading="lazy"><figcaption>On the job across the River Region.</figcaption></figure>
     <h2>What we do</h2>
     <p>We handle <a href="{u('services/ac-repair/')}">A/C repair</a>, <a href="{u('services/heating-furnace-repair/')}">heating and furnace repair</a>, <a href="{u('services/new-hvac-systems/')}">new system installs</a>, <a href="{u('services/maintenance-tune-ups/')}">maintenance</a>, <a href="{u('services/duct-work/')}">duct work</a> and <a href="{u('services/emergency-hvac/')}">24-hour emergency service</a>, for homeowners in <a href="{u('areas/wetumpka/')}">Wetumpka</a>, <a href="{u('areas/millbrook/')}">Millbrook</a>, <a href="{u('areas/montgomery/')}">Montgomery</a> and around <a href="{u('areas/lake-martin/')}">Lake Martin</a>.</p>
@@ -455,7 +455,7 @@ def home_page():
       </div>
       <div class="hero-photo">
         <img src="{u('assets/trucks-hero-clean.png')}" alt="McKinley Co. Heating &amp; Cooling service truck and van parked at the shop">
-        <div class="hero-tag"><strong>Licensed &middot; Insured &middot; Local</strong><span>10+ years experience</span></div>
+        <div class="hero-tag"><strong>Licensed &middot; Local</strong><span>10+ years experience</span></div>
       </div>
     </div>
   </section>
@@ -483,7 +483,7 @@ def home_page():
       <ul class="promise-list">
         <li><span class="dot"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><strong>Fast response</strong><span>Customers tell us we've been out within 15 minutes, even on a Sunday.</span></div></li>
         <li><span class="dot"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><strong>Honest answers</strong><span>We diagnose it, explain it clearly, and fix what's actually broken.</span></div></li>
-        <li><span class="dot"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><strong>Fair prices</strong><span>Customers call our prices reasonable. Licensed and insured, AL #{LICENSE}.</span></div></li>
+        <li><span class="dot"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><strong>Fair prices</strong><span>Customers call our prices reasonable. Licensed, AL #{LICENSE}.</span></div></li>
       </ul>
       <p style="margin-top:20px"><a class="btn btn-ghost" href="{u('about/')}">More about us</a></p>
     </div>
