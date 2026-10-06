@@ -269,7 +269,7 @@ def home():
     <ul class="info">
       <li><b>Where</b><a href="{GMAPS}" target="_blank" rel="noopener">{e(STREET)}<br>{CITY}, FL {ZIP}</a></li>
       <li><b>Call</b><a href="tel:{TEL}">{PHONE}</a></li>
-      <li><b>Hours</b><span>{PH('your weekly hours go here: days and times')}</span></li>
+      <li><b>Hours</b><span>Tue&ndash;Fri 10 AM&ndash;5 PM &middot; Sat 10 AM&ndash;4 PM &middot; Closed Sun &amp; Mon</span></li>
     </ul>
     <p><a class="btn btn-primary" href="{u('visit/')}">Hours &amp; directions</a></p></div>
   <div class="follow"><p class="eyebrow">Follow along</p><p>See what&rsquo;s fresh on <a href="{IG}" target="_blank" rel="noopener">Instagram</a> and <a href="{FB}" target="_blank" rel="noopener">Facebook</a>.</p></div>
@@ -376,10 +376,11 @@ def visit():
       <li><b>Address</b><a href="{GMAPS}" target="_blank" rel="noopener">{e(STREET)}<br>{CITY}, FL {ZIP}</a></li>
       <li><b>Call</b><a href="tel:{TEL}">{PHONE}</a></li>
       <li><b>Email</b><a href="mailto:{EMAIL}">{EMAIL}</a></li>
-      <li><b>Hours</b><span>{PH('your weekly hours go here. Opening day was 9 AM, but Google now shows a 10 AM opening and closed Sunday and Monday: which is right?')}</span></li>
+      <li><b>Hours</b><span>Tue&ndash;Fri 10 AM&ndash;5 PM &middot; Sat 10 AM&ndash;4 PM &middot; Closed Sun &amp; Mon</span></li>
       <li><b>Find us</b><span>On US Highway 98 in {CITY}, near La Canosa Blvd.</span></li>
       <li><b>Follow</b><span><a href="{IG}" target="_blank" rel="noopener">Instagram</a> &middot; <a href="{FB}" target="_blank" rel="noopener">Facebook</a></span></li>
     </ul>
+    {DN("these are the hours on your Google listing. Are they right, including closed Sunday and Monday? Tell us any changes, like holidays or summer hours.")}
     <p><a class="btn btn-primary" href="https://www.google.com/maps/dir/?api=1&destination={LAT},{LNG}" target="_blank" rel="noopener">Get directions</a></p>
   </div>
   <div class="mapbox"><iframe title="Map to Madly Madeleine" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q={LAT},{LNG}&z=16&output=embed"></iframe></div>
