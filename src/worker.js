@@ -255,7 +255,7 @@ const DUPE_WINDOW_MS = 3 * 60 * 1000;
 const TRACKED_CLIENT_TYPES = ["view", "temp_login", "login", "password_set"];
 
 function isBotUA(ua) {
-  return !ua || /bot|crawl|spider|preview|facebookexternalhit|slurp|whatsapp|telegram|discord|skype|embedly|curl|wget|python|go-http|okhttp|headless|lighthouse|monitor|uptime|node-fetch|axios/i.test(ua);
+  return !ua || /bot|crawl|spider|preview|facebookexternalhit|slurp|whatsapp|telegram|discord|skype|embedly|curl|wget|python|go-http|okhttp|headless|lighthouse|monitor|uptime|node-fetch|axios|tektoncheck/i.test(ua)   // 'TektonCheck' = Claude's own site tests, never counted as client activity;
 }
 
 function describeUA(ua) {
