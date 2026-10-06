@@ -12,6 +12,7 @@ h1 em,h2 em{font-family:"Pinyon Script",cursive;font-style:normal;font-weight:40
 .eyebrow,.kicker{font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;color:var(--rose);font-weight:600;margin:0 0 12px}
 .section-title{font-size:clamp(2rem,4.6vw,3.1rem)}
 .lede,.lede-dark{font-size:1.1rem;color:var(--muted);max-width:60ch}
+.draft-note{margin:20px 0}
 .note{background:rgba(185,138,90,.12);border:1px dashed var(--gold);border-radius:12px;padding:10px 14px;font-size:.9rem}
 .ph{color:#9a5a1f;background:rgba(185,138,90,.16);border-radius:6px;padding:1px 6px;font-size:.88em;font-weight:500}
 

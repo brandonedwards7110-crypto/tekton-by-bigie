@@ -27,6 +27,12 @@ e = lambda s: html.escape(s, quote=True)
 u = lambda p="": BASE + p
 PH = lambda t: f'<span class="ph">[{e(t)}]</span>'     # visible placeholder marker
 
+# Owner-facing "[Draft preview ...]" notes: tell the owner exactly what we need from them (Brandon's rule, 2026-10-06).
+# Set DRAFT_NOTES = False at launch, then grep the output for "Draft preview" until none are left (also the form note,
+# the placeholder review cards and every PH() placeholder).
+DRAFT_NOTES = True
+DN = lambda t: f'<p class="note draft-note">[Draft preview &mdash; {e(t)}]</p>' if DRAFT_NOTES else ""
+
 NAV = [("Menu", "menu/"), ("Our Story", "our-story/"), ("News", "news/"), ("Visit", "visit/")]
 written = []
 
@@ -170,7 +176,7 @@ def carousel():
     items = "".join(f"""<div class="cf-item"><div class="cf-card ph-card">
           <div class="stars" aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
           <p class="ph-quote">&ldquo;{e(t)}&rdquo;</p>
-          <p class="ph-who">{PH("customer name")}</p>
+          <p class="ph-who">{PH("reviewer name")}</p>
           <div class="src"><i></i> {e(s)} &middot; placeholder</div></div></div>""" for t, s in cards)
     return f"""<div class="cf-wrap">
         <div class="cf-stage" id="cf" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Customer reviews">{items}</div>
@@ -178,7 +184,7 @@ def carousel():
         <button class="cf-arrow cf-next" id="cfNext" aria-label="Next review"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
       </div>
       <div class="cf-dots" id="cfDots" aria-label="Choose review"></div>
-      <p class="cf-hint">Draft layout: these cards are placeholders. Real Google &amp; Facebook reviews swap in here as they come in &mdash; shown as screenshots, exactly as written.</p>"""
+      <p class="cf-hint">[Draft preview &mdash; these five cards are placeholders. Real Google and Facebook reviews go here, shown exactly as written. You don&rsquo;t have any reviews yet, so ask a few happy customers to leave you a Google review and we&rsquo;ll add them.]</p>"""
 
 
 def assemble(path, title, desc, active, body, blocks):
@@ -229,6 +235,7 @@ def home():
     <a class="card" href="{u('menu/')}">{photo('madeleine-and-coffee', 'A chocolate-glazed madeleine beside an espresso in a navy cup')}<h3>Coffee &amp; tea</h3><p>With coffee, with tea or as a special break during your day.</p><span class="more">See the menu &rarr;</span></a>
     <a class="card" href="{u('visit/')}">{photo('interior-espresso', 'Espresso and two madeleines on a marble table beside a banquette with pink pillows')}<h3>A little place to sit</h3><p>Houndstooth walls, marble tables and bistro chairs, right on US-98 in Santa Rosa Beach.</p><span class="more">Plan your visit &rarr;</span></a>
   </div>
+  {DN("these photos come from your Facebook and Instagram. Send your original, full-size photos from your phone and we will swap in sharper ones, plus anything you want featured: the café, the display case, you and the team.")}
 </div></section>
 
 <section class="split"><div class="wrap split-grid">
@@ -262,7 +269,7 @@ def home():
     <ul class="info">
       <li><b>Where</b><a href="{GMAPS}" target="_blank" rel="noopener">{e(STREET)}<br>{CITY}, FL {ZIP}</a></li>
       <li><b>Call</b><a href="tel:{TEL}">{PHONE}</a></li>
-      <li><b>Hours</b><span>{PH('weekly hours: confirm with owner')}</span></li>
+      <li><b>Hours</b><span>{PH('your weekly hours go here: days and times')}</span></li>
     </ul>
     <p><a class="btn btn-primary" href="{u('visit/')}">Hours &amp; directions</a></p></div>
   <div class="follow"><p class="eyebrow">Follow along</p><p>See what&rsquo;s fresh on <a href="{IG}" target="_blank" rel="noopener">Instagram</a> and <a href="{FB}" target="_blank" rel="noopener">Facebook</a>.</p></div>
@@ -277,7 +284,7 @@ def menu():
     desc = "French madeleines, coffee, tea and cold drinks at Madly Madeleine in Santa Rosa Beach, FL. Learn what a madeleine is and how to enjoy one."
     body = page_hero(trail, "Madeleines, coffee &amp; tea", "Coffee, tea, cold drinks &amp; French madeleines. Discover today&rsquo;s flavors at Madly Madeleine in Santa Rosa Beach.", "Menu") + f"""
 <section><div class="wrap">
-  <p class="note">{PH('Draft: flavor names and prices go here once confirmed with the owner')}</p>
+  {DN("send us your flavor names and prices and we will list them here. Do you sell boxes, take pre-orders or do catering? Tell us what is real and we will add it, and only that.")}
 
   <h2 class="section-title">French <em>madeleines</em></h2>
   <p class="lede-dark">Small French cakes baked in a traditional shell-shaped mold, piped by hand. Today&rsquo;s flavors vary &mdash; discover them when you visit.</p>
@@ -294,11 +301,11 @@ def menu():
   <div class="split-grid tight">
     {photo('madeleine-and-coffee', 'A chocolate-glazed madeleine on a plate beside an espresso in a navy cup', 'round')}
     <div><p class="lede-dark">A proper espresso, hot tea and a little place to slow down. Enjoy a madeleine with coffee, with tea or as a special break during your day.</p>
-    <ul class="menu-list ph-list"><li>{PH('coffee & espresso drinks: the owner confirmed a noisette on Facebook')}</li><li>{PH('teas')}</li></ul></div>
+    <ul class="menu-list ph-list"><li>{PH('your espresso and coffee drinks go here. We saw a noisette on your Facebook: what else do you serve?')}</li><li>{PH('your teas go here')}</li></ul></div>
   </div>
 
   <h2 class="section-title">Cold <em>drinks</em></h2>
-  <ul class="menu-list ph-list"><li>{PH('cold drinks & iced coffee: confirm menu')}</li></ul>
+  <ul class="menu-list ph-list"><li>{PH('your cold drinks and iced coffee go here')}</li></ul>
 </div></section>
 
 <section class="alt" id="faq"><div class="wrap narrow">
@@ -322,7 +329,7 @@ def story():
     <blockquote class="story-quote">&ldquo;We left France, lived five years in Quebec, and came here on vacation. The Gulf Coast stole our hearts, so we stayed.&rdquo;</blockquote>
     <p class="cite">&mdash; Madly Madeleine, in the opening-day reel on Instagram</p>
     <p>Behind every little shell, there&rsquo;s a pair of hands. Arnaud pipes each madeleine one at a time, the way it&rsquo;s done back home in France. Then we pour the coffee, set the table and wait for you.</p>
-    <p class="note">{PH("Add the owners' names and a line about who 'we' is once confirmed")}</p>
+    {DN("add your full names and a line or two about who we are. Is Arnaud the owner? Is there anyone else to introduce? A photo of you together would go well here.")}
   </div>
 </div></section>
 
@@ -351,7 +358,7 @@ def news():
     <p><strong>Doors open at 9 AM.</strong> &ldquo;A little corner of France opens on US 98: madeleines in every flavor, good coffee and time to slow down. Come say bonjour.&rdquo;</p>
     <p>Madly Madeleine opened its doors at {e(STREET)} in {CITY}: a French café and pâtisserie with coffee, tea, cold drinks and French madeleines.</p>
     <p>Follow along on <a href="{IG}" target="_blank" rel="noopener">Instagram</a> and <a href="{FB}" target="_blank" rel="noopener">Facebook</a> to see what&rsquo;s fresh.</p>
-    <p class="note">{PH('Future posts go here: new flavors, seasonal specials, events')}</p>
+    {DN("this page is for your news: new flavors, seasonal specials, events. Tell us when you have something to share and we will add it.")}
   </div>
 </div></section>
 {cta_band("Your first madeleine is waiting")}"""
@@ -369,7 +376,7 @@ def visit():
       <li><b>Address</b><a href="{GMAPS}" target="_blank" rel="noopener">{e(STREET)}<br>{CITY}, FL {ZIP}</a></li>
       <li><b>Call</b><a href="tel:{TEL}">{PHONE}</a></li>
       <li><b>Email</b><a href="mailto:{EMAIL}">{EMAIL}</a></li>
-      <li><b>Hours</b><span>{PH('weekly hours: confirm with owner. Opening day was 9 AM; Google now shows a 10 AM opening and closed Sun/Mon')}</span></li>
+      <li><b>Hours</b><span>{PH('your weekly hours go here. Opening day was 9 AM, but Google now shows a 10 AM opening and closed Sunday and Monday: which is right?')}</span></li>
       <li><b>Find us</b><span>On US Highway 98 in {CITY}, near La Canosa Blvd.</span></li>
       <li><b>Follow</b><span><a href="{IG}" target="_blank" rel="noopener">Instagram</a> &middot; <a href="{FB}" target="_blank" rel="noopener">Facebook</a></span></li>
     </ul>
@@ -386,7 +393,7 @@ def visit():
     <div><label for="c-email">Email</label><input id="c-email" type="email" placeholder="jane@email.com"></div></div>
     <div><label for="c-msg">Message</label><textarea id="c-msg" rows="4" placeholder="How can we help?"></textarea></div>
     <button class="btn btn-primary" type="button">Send message</button>
-    <p class="form-note">[Draft preview &mdash; the form gets wired to the owner&rsquo;s email when the site goes live.]</p>
+    <p class="form-note">[Draft preview &mdash; the form gets wired to your email when the site goes live.]</p>
   </div>
 </div></section>"""
     write(path, assemble(path, "Visit Madly Madeleine | 3906 US-98 #2, Santa Rosa Beach, FL", desc, path, body, [crumbs_ld(trail), biz_ld()]))
