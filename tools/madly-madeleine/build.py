@@ -227,10 +227,8 @@ HOT = [
     ("London Fog Artisanal (hot or iced)", "Organic Earl Grey, fragrant vanilla & steamed milk", "16 oz $6.00"),
     ("Organic Rishi Teas", "Earl Grey, English Breakfast &middot; Jade Cloud, Peach Yuzu Green, Jasmine &middot; Turmeric Ginger, Blueberry Hibiscus", "12 oz $4.50"),
 ]
-ICED = [       # two cold-brew names are crossed out on the printed menu -> placeholders
+ICED = [       # the two cold brews are crossed out on the printed menu: Brandon says they are being dropped (2026-10-07)
     ("Iced Café Latte", "Double espresso over ice & cold milk", "16 oz $5.75 &middot; 24 oz $6.75"),
-    (PH("name"), "Slow-steeped artisanal cold brew", "16 oz $4.75 &middot; 24 oz $5.75"),
-    (PH("name"), "Caramel, chocolate & nutty indulgence & splash of milk", "16 oz $6.00 &middot; 24 oz $7.00"),
     ("Iced Masala Chai Latte", "Spiced artisanal chai infusion & cold milk", "16 oz $6.00 &middot; 24 oz $7.00"),
     ("Iced Matcha Latte, Botanique or Macaron", "Organic matcha & soothing lavender notes, or a sweet strawberry-rose blend", "16 oz $6.50 &middot; 24 oz $7.50"),
 ]
@@ -358,7 +356,7 @@ def menu():
     desc = "French madeleines, coffee, tea and cold drinks at Madly Madeleine in Santa Rosa Beach, FL. Learn what a madeleine is and how to enjoy one."
     body = page_hero(trail, "Madeleines, coffee &amp; tea", "Coffee, tea, cold drinks &amp; French madeleines. Discover today&rsquo;s flavors at Madly Madeleine in Santa Rosa Beach.", "Menu") + f"""
 <section><div class="wrap">
-  {DN("the names and prices on this page come from a photo of your printed menu (Oct 7). Please check every price and every description. Still missing: the names of your madeleine flavors, the names of two cold brews that are crossed out on your menu, and the prices of the two gift bags.")}
+  {DN("the names and prices on this page come from a photo of your printed menu (Oct 7). Please check every price and every description. Still missing: the names of your madeleine flavors and the prices of the two gift bags. The two cold brews that are crossed out on your menu are left off. When lunch, croissants and anything new are ready, send us the items and prices and we will add them.")}
 
   <h2 class="section-title">French <em>madeleines</em></h2>
   <p class="lede-dark">Small French cakes baked in a traditional shell-shaped mold, piped by hand. Today&rsquo;s flavors vary &mdash; discover them when you visit.</p>
