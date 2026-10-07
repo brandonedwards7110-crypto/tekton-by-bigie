@@ -201,6 +201,56 @@ def order_steps():
     </ol>"""
 
 
+# ---- Their printed menu (Brandon's photos at the café, 2026-10-07; saved in the client folder as menu-photo-*.jpg).
+# Every name, description and price below is read straight off those photos. Anything unreadable stays a PH() placeholder.
+MADELEINES = [
+    ("Single Artisanal Madeleine", "In-store exclusive: let your senses wander and yield to the secret inspiration of the day.", "$3.50"),
+    ("Mini Madeleines", "A box of Mini Golden Whimsy. Come with a decadent companion of your choice: a cloak of dark chocolate, a bath of creamy white chocolate, a buttery sweep of caramel or pistachio.", "$5.90"),
+]
+COFFRETS = [
+    ("Petite Box: box of 3", "A charming assortment of 3 madeleines of your choice, nestled in our signature box.", "$9.50"),
+    ("Gourmande Box: box of 6", "Six freshly baked madeleines selected by you: the perfect afternoon indulgence.", "$18.00"),
+    ("Grand Coffret: box of 15", "Fifteen artisanal madeleines crafted for celebrations, gatherings, and lovers of French pastry.", "$40.00"),
+]
+BOUTIQUE = [   # the two gift-bag prices are hard to read on the menu: a handwritten "$15" and a printed "$7.00" -> confirm
+    ("Gift Bag of 6 Classic Madeleines", "Ideal for a refined gift or to pair with your favorite tea.", PH("confirm price: your menu shows $15 written by hand")),
+    ("Gift Bag of 18 Mini Madeleines", "Ideal for a refined gift or to pair with your favorite tea.", PH("confirm price: your menu shows $7.00")),
+    ("Signature Ceramic Mug", "Adorned with our signature emblem.", "$18.00"),
+]
+HOT = [
+    ("Double Espresso", "Rich & velvety roast extraction", "4 oz $3.75"),
+    ("Café Americano", "Double espresso lengthened with hot water", "8 oz $3.75 &middot; 12 oz $4.00 &middot; 16 oz $4.50"),
+    ("Cappuccino", "Traditional airy foam & bold espresso", "8 oz $4.75 &middot; 12 oz $5.25"),
+    ("Café Mocha", "Espresso, gourmet chocolate & steamed milk", "8 oz $5.00 &middot; 12 oz $5.50"),
+    ("Hot Matcha Latte", "A vibrant, earthy blend of pure organic matcha and silky milk", "12 oz $5.75 &middot; 16 oz $6.25"),
+    ("Hot Chocolate", "Velvety French-style gourmet cocoa", "8 oz $4.00 &middot; 12 oz $4.50 &middot; 16 oz $5.00"),
+    ("London Fog Artisanal (hot or iced)", "Organic Earl Grey, fragrant vanilla & steamed milk", "16 oz $6.00"),
+    ("Organic Rishi Teas", "Earl Grey, English Breakfast &middot; Jade Cloud, Peach Yuzu Green, Jasmine &middot; Turmeric Ginger, Blueberry Hibiscus", "12 oz $4.50"),
+]
+ICED = [       # two cold-brew names are crossed out on the printed menu -> placeholders
+    ("Iced Café Latte", "Double espresso over ice & cold milk", "16 oz $5.75 &middot; 24 oz $6.75"),
+    (PH("name"), "Slow-steeped artisanal cold brew", "16 oz $4.75 &middot; 24 oz $5.75"),
+    (PH("name"), "Caramel, chocolate & nutty indulgence & splash of milk", "16 oz $6.00 &middot; 24 oz $7.00"),
+    ("Iced Masala Chai Latte", "Spiced artisanal chai infusion & cold milk", "16 oz $6.00 &middot; 24 oz $7.00"),
+    ("Iced Matcha Latte, Botanique or Macaron", "Organic matcha & soothing lavender notes, or a sweet strawberry-rose blend", "16 oz $6.50 &middot; 24 oz $7.50"),
+]
+REFRESH = [
+    ("Mademoiselle Rose Lemonade", "Homemade lemonade", "16 oz $4.75 &middot; 24 oz $5.75"),
+    ("La Vie en Rose Iced Tea", "Floral & refreshing", "16 oz $5.00 &middot; 24 oz $6.00"),
+    ("French Sparkling Drinks, Maison Perrier (11 oz)", "Blackberry & Lemon &middot; Peach & Cherry &middot; Mango & Coconut &middot; Raspberry & Lime", "$3.50"),
+    ("Other beverages", "Soda &middot; Organic chocolate milk box $3.50 &middot; Organic apple juice $4.50", ""),
+]
+
+
+def menu_rows(rows):
+    out = []
+    for n, d, p in rows:
+        name = n if n.startswith("<span") else e(n)
+        desc = e(d).replace("&amp;middot;", "&middot;")
+        out.append(f'<li><span class="mi"><b>{name}</b><small>{desc}</small></span><span class="pr">{p}</span></li>')
+    return '<ul class="menu-list priced">' + "".join(out) + "</ul>"
+
+
 def assemble(path, title, desc, active, body, blocks):
     return head(title, desc, path, blocks) + header(active) + body + footer()
 
@@ -308,7 +358,7 @@ def menu():
     desc = "French madeleines, coffee, tea and cold drinks at Madly Madeleine in Santa Rosa Beach, FL. Learn what a madeleine is and how to enjoy one."
     body = page_hero(trail, "Madeleines, coffee &amp; tea", "Coffee, tea, cold drinks &amp; French madeleines. Discover today&rsquo;s flavors at Madly Madeleine in Santa Rosa Beach.", "Menu") + f"""
 <section><div class="wrap">
-  {DN("send us your flavor names and prices and we will list them here. Do you sell boxes, take pre-orders or do catering? Tell us what is real and we will add it, and only that.")}
+  {DN("the names and prices on this page come from a photo of your printed menu (Oct 7). Please check every price and every description. Still missing: the names of your madeleine flavors, the names of two cold brews that are crossed out on your menu, and the prices of the two gift bags.")}
 
   <h2 class="section-title">French <em>madeleines</em></h2>
   <p class="lede-dark">Small French cakes baked in a traditional shell-shaped mold, piped by hand. Today&rsquo;s flavors vary &mdash; discover them when you visit.</p>
@@ -317,9 +367,13 @@ def menu():
     {photo('chocolate-box', 'Dark-chocolate-dipped madeleines in a mint-green Madly Madeleine box', '', 'Chocolate-dipped, boxed to go')}
     {photo('madeleine-hump', 'A classic golden madeleine showing its characteristic hump', '', 'The classic, with its signature hump')}
   </div>
-  <ul class="menu-list ph-list">
-    <li>{PH('flavor name')} <span>{PH('price')}</span></li><li>{PH('flavor name')} <span>{PH('price')}</span></li><li>{PH('box sizes & prices')}</li>
-  </ul>
+  <h3 class="menu-sub">Artisanal madeleines <small>Les Madeleines Artisanales</small></h3>
+  {menu_rows(MADELEINES)}
+  <ul class="menu-list ph-list"><li>{PH("your madeleine flavors go here")}</li></ul>
+  <h3 class="menu-sub">Gift &amp; sharing boxes <small>Les Coffrets Gourmands</small></h3>
+  {menu_rows(COFFRETS)}
+  <h3 class="menu-sub">The souvenir boutique <small>La Boutique Souvenir</small></h3>
+  {menu_rows(BOUTIQUE)}
 
   <div class="order-box" id="how-to-order">
     <p class="eyebrow">How to order</p>
@@ -333,11 +387,18 @@ def menu():
   <div class="split-grid tight">
     {photo('madeleine-and-coffee', 'A chocolate-glazed madeleine on a plate beside an espresso in a navy cup', 'round')}
     <div><p class="lede-dark">A proper espresso, hot tea and a little place to slow down. Enjoy a madeleine with coffee, with tea or as a special break during your day.</p>
-    <ul class="menu-list ph-list"><li>{PH('your espresso and coffee drinks go here. We saw a noisette on your Facebook: what else do you serve?')}</li><li>{PH('your teas go here')}</li></ul></div>
+    </div>
   </div>
+  <h3 class="menu-sub">Hot specialties &amp; teas <small>Le Café &amp; Hot Specialties</small></h3>
+  <p class="plant">Plant-based milk option (oat or almond): +$1.00</p>
+  {menu_rows(HOT)}
 
   <h2 class="section-title">Cold <em>drinks</em></h2>
-  <ul class="menu-list ph-list"><li>{PH('your cold drinks and iced coffee go here')}</li></ul>
+  <h3 class="menu-sub">Iced coffee &amp; specialty lattes <small>Les Glacés</small></h3>
+  <p class="plant">Plant-based milk option (oat or almond): +$1.00</p>
+  {menu_rows(ICED)}
+  <h3 class="menu-sub">Refreshments</h3>
+  {menu_rows(REFRESH)}
 </div></section>
 
 <section class="alt" id="faq"><div class="wrap narrow">
@@ -378,12 +439,16 @@ def gifts():
 
 <section><div class="wrap narrow">
   <h2 class="section-title">Boxes &amp; <em>prices</em></h2>
+  <h3 class="menu-sub">Gift &amp; sharing boxes <small>Les Coffrets Gourmands</small></h3>
+  {menu_rows(COFFRETS)}
+  <h3 class="menu-sub">The souvenir boutique <small>La Boutique Souvenir</small></h3>
+  {menu_rows(BOUTIQUE)}
   <ul class="menu-list ph-list">
-    <li>{PH('box sizes and prices, for example a small gift box and a larger business box')}</li>
     <li>{PH('flavors available for gift boxes')}</li>
     <li>{PH('pickup, delivery, or both')}</li>
     <li>{PH('minimum order for businesses, if any')}</li>
   </ul>
+  {DN("these box prices come from your printed menu. Please check them, and tell us the two gift-bag prices.")}
 </div></section>
 
 <section class="alt" id="how-to-order"><div class="wrap">
