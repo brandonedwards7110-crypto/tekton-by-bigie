@@ -162,3 +162,14 @@ input,textarea{width:100%;font:inherit;padding:12px 14px;border-radius:12px;bord
 
 .story-quote{margin:0 0 6px;font-family:"Cormorant Garamond",serif;font-style:italic;font-size:1.7rem;line-height:1.25;color:var(--rose-dark);border-left:3px solid var(--rose);padding-left:18px}
 .cite{font-size:.8rem;color:var(--muted);margin:0 0 18px 21px}
+
+/* how to order + gifts page */
+.order-box{margin:46px 0 10px;padding:30px 28px;background:var(--blush);border-radius:26px}
+.steps{list-style:none;counter-reset:s;padding:0;margin:24px 0;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.steps li{counter-increment:s;background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px 18px 16px;box-shadow:var(--shadow);font-size:.95rem;color:var(--muted)}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--rose);color:#fff;font-weight:600;margin-bottom:10px}
+.steps li b{display:block;font-family:"Cormorant Garamond",Georgia,serif;font-size:1.4rem;line-height:1.15;color:var(--cocoa);font-weight:600;margin-bottom:4px}
+@media(max-width:860px){.steps{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.steps{grid-template-columns:1fr}}
+.tcard{background:#fff;border-radius:22px;padding:24px 24px 20px;box-shadow:var(--shadow)}
+.tcard h3{font-size:1.5rem;margin:0 0 8px}.tcard p{margin:0;color:var(--muted);font-size:.95rem}

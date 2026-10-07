@@ -33,7 +33,11 @@ PH = lambda t: f'<span class="ph">[{e(t)}]</span>'     # visible placeholder mar
 DRAFT_NOTES = True
 DN = lambda t: f'<p class="note draft-note">[Draft preview &mdash; {e(t)}]</p>' if DRAFT_NOTES else ""
 
-NAV = [("Menu", "menu/"), ("Our Story", "our-story/"), ("News", "news/"), ("Visit", "visit/")]
+# Gifts & corporate-orders page (Brandon 2026-10-07: "the whole concierge order" page, wants a fancy name).
+# GIFT_NAME is a WORKING name: change it here and rebuild. The URL stays /gifts/ so the address never changes with the name.
+GIFT_NAME, GIFT_FIRST, GIFT_REST = "Petites Attentions", "Petites", "Attentions"
+GIFT_PATH = "gifts/"
+NAV = [("Menu", "menu/"), ("Gifts", GIFT_PATH), ("Our Story", "our-story/"), ("News", "news/"), ("Visit", "visit/")]
 written = []
 
 
@@ -187,6 +191,16 @@ def carousel():
       <p class="cf-hint">[Draft preview &mdash; these five cards are placeholders. Real Google and Facebook reviews go here, shown exactly as written. You don&rsquo;t have any reviews yet, so ask a few happy customers to leave you a Google review and we&rsquo;ll add them.]</p>"""
 
 
+def order_steps():
+    """How orders work, in the owners' own words from the 2026-10-06 meeting: email -> they confirm -> 48 hours' notice -> Square payment link."""
+    return f"""<ol class="steps">
+      <li><b>Email your order</b>Send it to <a href="mailto:{EMAIL}">{EMAIL}</a>: what you would like, how many, and the day you need it.</li>
+      <li><b>We confirm</b>We reply to confirm your order.</li>
+      <li><b>48 hours&rsquo; notice</b>Orders need at least 48 hours&rsquo; notice.</li>
+      <li><b>Pay with Square</b>Once your order is confirmed, we send you a payment link.</li>
+    </ol>"""
+
+
 def assemble(path, title, desc, active, body, blocks):
     return head(title, desc, path, blocks) + header(active) + body + footer()
 
@@ -258,6 +272,16 @@ def home():
   {photo('madeleine-cut', 'A madeleine cut in half to show its soft golden interior', 'round')}
 </div></section>
 
+<section class="split alt"><div class="wrap split-grid">
+  {photo('chocolate-box', 'Dark-chocolate-dipped madeleines in a mint-green Madly Madeleine box on a marble table', 'round')}
+  <div>
+    <p class="eyebrow">Gifts &amp; corporate orders</p>
+    <h2 class="section-title">{GIFT_FIRST} <em>{GIFT_REST}.</em></h2>
+    <p>A small French gift for the people you appreciate: a client, a guest, your team. Madeleines, piped by hand.</p>
+    <p><a class="btn btn-ghost" href="{u(GIFT_PATH)}">See gifts &amp; orders</a></p>
+  </div>
+</div></section>
+
 <section class="reviews"><div class="wrap">
   <p class="eyebrow">Straight from our guests</p>
   <h2 class="section-title">Kind <em>words.</em></h2>
@@ -297,6 +321,14 @@ def menu():
     <li>{PH('flavor name')} <span>{PH('price')}</span></li><li>{PH('flavor name')} <span>{PH('price')}</span></li><li>{PH('box sizes & prices')}</li>
   </ul>
 
+  <div class="order-box" id="how-to-order">
+    <p class="eyebrow">How to order</p>
+    <h2 class="section-title">Order <em>ahead.</em></h2>
+    {order_steps()}
+    <p>Ordering for a business or as a gift? See <a href="{u(GIFT_PATH)}">{e(GIFT_NAME)}</a>.</p>
+    {DN("this is how you told us orders work today. Please read it and correct anything that is not exactly how you work. If orders should go to a different email address, tell us.")}
+  </div>
+
   <h2 class="section-title">Coffee &amp; <em>tea</em></h2>
   <div class="split-grid tight">
     {photo('madeleine-and-coffee', 'A chocolate-glazed madeleine on a plate beside an espresso in a navy cup', 'round')}
@@ -315,6 +347,53 @@ def menu():
 </div></section>
 {cta_band("Your first madeleine is waiting")}"""
     write(path, assemble(path, "Menu: French Madeleines, Coffee & Tea | Madly Madeleine", desc, path, body, [crumbs_ld(trail), faq_ld(FAQS), biz_ld()]))
+
+
+# ================================================================== GIFTS & CORPORATE ORDERS
+def gifts():
+    path = GIFT_PATH; trail = [("Home", ""), ("Gifts", path)]
+    desc = "French madeleines as gifts and for business orders from Madly Madeleine in Santa Rosa Beach, FL. Order by email with 48 hours' notice."
+    mail = f"mailto:{EMAIL}?subject=" + html.escape("Gift or business order", quote=True).replace(" ", "%20")
+    body = page_hero(trail, f"{GIFT_FIRST} <em>{GIFT_REST}.</em>", "French madeleines for the people you want to thank, welcome or celebrate.", "Gifts &amp; corporate orders") + f"""
+<section><div class="wrap split-grid">
+  {photo('chocolate-box', 'Dark-chocolate-dipped madeleines in a mint-green Madly Madeleine box on a marble table', 'round', 'Chocolate-dipped, boxed to go')}
+  <div>
+    <p class="eyebrow">A thoughtful touch</p>
+    <h2 class="section-title">Madeleines for the people <em>you appreciate.</em></h2>
+    <p>A small French gift goes a long way. Every madeleine is piped by hand by Arnaud, the way it&rsquo;s done back home in France.</p>
+    <p><a class="btn btn-primary" href="{mail}">Start an order</a></p>
+    {DN("this page is for the gift packs and business orders you talked about with us. Send your box sizes and prices, which flavors can go in a gift box, and whether you offer pickup, delivery or both. We will only list what is real, and you can cross out any wording here you do not like. Do you want a different name for this page? Tell us.")}
+  </div>
+</div></section>
+
+<section class="alt"><div class="wrap">
+  <p class="eyebrow">Good for</p>
+  <h2 class="section-title">A gift for <em>every occasion.</em></h2>
+  <div class="cards3">
+    <div class="tcard"><h3>Client thank-yous</h3><p>Say thank you to a customer, a referral or a partner with something handmade.</p></div>
+    <div class="tcard"><h3>Welcome gifts</h3><p>Greet guests and new neighbors with a taste of France on the Gulf Coast.</p></div>
+    <div class="tcard"><h3>Team treats &amp; events</h3><p>Bring madeleines to the office, a meeting or a celebration.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap narrow">
+  <h2 class="section-title">Boxes &amp; <em>prices</em></h2>
+  <ul class="menu-list ph-list">
+    <li>{PH('box sizes and prices, for example a small gift box and a larger business box')}</li>
+    <li>{PH('flavors available for gift boxes')}</li>
+    <li>{PH('pickup, delivery, or both')}</li>
+    <li>{PH('minimum order for businesses, if any')}</li>
+  </ul>
+</div></section>
+
+<section class="alt" id="how-to-order"><div class="wrap">
+  <p class="eyebrow">How to order</p>
+  <h2 class="section-title">Order <em>ahead.</em></h2>
+  {order_steps()}
+  <p><a class="btn btn-primary" href="{mail}">Email your order</a></p>
+</div></section>
+{cta_band("Let&rsquo;s plan your order")}"""
+    write(path, assemble(path, f"{GIFT_NAME}: Gifts & Corporate Orders | Madly Madeleine", desc, path, body, [crumbs_ld(trail), biz_ld()]))
 
 
 # ================================================================== OUR STORY
@@ -401,5 +480,5 @@ def visit():
 
 
 if __name__ == "__main__":
-    home(); menu(); story(); news(); visit()
+    home(); menu(); gifts(); story(); news(); visit()
     print(f"built {len(written)} pages into {OUT}:"); [print("  /" + w) for w in written]
