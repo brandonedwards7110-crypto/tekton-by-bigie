@@ -419,6 +419,7 @@ function loginPage({ slug, isAdmin, error }) {
       <input id="email" name="email" type="email" autocomplete="username" required autofocus>
       <label for="password">Password</label>
       <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <label class="chk"><input type="checkbox" id="showpw"> Show password</label>
       ${isAdmin ? "" : '<label class="chk"><input type="checkbox" name="change_password" value="1"> Change my password</label>'}
       <button type="submit">Log In</button>
     </form>
@@ -428,6 +429,9 @@ function loginPage({ slug, isAdmin, error }) {
       var e=document.getElementById('email'), p=document.getElementById('password');
       e.addEventListener('keydown', function(ev){
         if(ev.key==='Enter'){ ev.preventDefault(); p.focus(); }
+      });
+      document.getElementById('showpw').addEventListener('change', function(){
+        p.type = this.checked ? 'text' : 'password';
       });
     </script>
   `);
@@ -469,6 +473,7 @@ function resetPage({ slug, email, error, token }) {
       <input id="new_password" name="new_password" type="password" autocomplete="new-password" required minlength="6" autofocus>
       <label for="confirm_password">Confirm Password</label>
       <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required minlength="6">
+      <label class="chk"><input type="checkbox" id="showpw"> Show passwords</label>
       <button type="submit">Set Password &amp; Continue</button>
     </form>
     <div class="hint">Pick a new password to continue &mdash; you'll use it next time you log in.</div>
@@ -476,6 +481,9 @@ function resetPage({ slug, email, error, token }) {
       var n=document.getElementById('new_password'), c=document.getElementById('confirm_password');
       n.addEventListener('keydown', function(ev){
         if(ev.key==='Enter'){ ev.preventDefault(); c.focus(); }
+      });
+      document.getElementById('showpw').addEventListener('change', function(){
+        n.type = c.type = this.checked ? 'text' : 'password';
       });
     </script>
   `);
