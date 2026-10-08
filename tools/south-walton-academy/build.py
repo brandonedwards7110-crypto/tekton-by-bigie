@@ -34,7 +34,11 @@ PARENT_LOGIN = "https://app.praxischool.com/parent_login.php"
 SUMMER_SIGNUP = "https://app.praxischool.com"
 DONATE = "https://givebutter.com/SWAdonation"
 SPONSOR = "https://givebutter.com/sponsorachild26"
-TEEUP = "https://givebutter.com/7thAnnualTeeup"
+# the next three come from the QR codes printed on their own flyers (decoded 2026-10-07); all load and match the event.
+# Their current website still points its Register button at last year's page (7thAnnualTeeup).
+TEEUP = "https://givebutter.com/8th-annual-tee-up-for-autism"
+FALLFEST = "https://givebutter.com/7th-annual-fall-fest"
+ROYALTEA = "https://givebutter.com/SWARoyalTeaParty"
 SHOP = "https://south-walton-academy.myshopify.com"
 GYM_WAIVER = "https://docs.google.com/forms/d/e/1FAIpQLSdNnuYjE-GA3Xp_ST5AnY-Dg3URfBfVtBx5svzxWr8ptOC-qQ/viewform"
 AMERICAN_DREAM = "https://vimeo.com/1153582724"
@@ -625,7 +629,7 @@ def events():
     <div><span class="when">Friday, October 23</span><h3 style="font-size:1.6rem">Fall Festival fundraiser</h3>
       <ul class="facts"><li><b>Time</b><span>5:00&ndash;8:00 PM</span></li><li><b>Wristband</b><span>$20</span></li><li><b>Where</b><span>{e(STREET)}, {CITY}</span></li></ul>
       <p>Bounce house, haunted house, games, trunk-or-treat and food.</p>
-      <p><a class="btn btn-ghost" href="mailto:{EMAIL}?subject=Fall%20Festival">Questions? Email us</a></p></div>
+      <div class="btns" style="margin-top:0"><a class="btn btn-primary" href="{FALLFEST}" target="_blank" rel="noopener">Get wristbands</a><a class="btn btn-ghost" href="mailto:{EMAIL}?subject=Fall%20Festival">Questions? Email us</a></div></div>
   </div>
 
   <div class="event">
@@ -633,7 +637,7 @@ def events():
     <div><span class="when">Friday, November 13</span><h3 style="font-size:1.6rem">Royal Tea Party</h3>
       <ul class="facts"><li><b>Time</b><span>5:00&ndash;7:00 PM</span></li><li><b>Cost</b><span>$25 per person</span></li></ul>
       <p>A magical evening of tea, treats and royal fun. Come dressed to impress!</p>
-      <p><a class="btn btn-ghost" href="mailto:{EMAIL}?subject=Royal%20Tea%20Party">Questions? Email us</a></p></div>
+      <div class="btns" style="margin-top:0"><a class="btn btn-primary" href="{ROYALTEA}" target="_blank" rel="noopener">Sign up</a><a class="btn btn-ghost" href="mailto:{EMAIL}?subject=Royal%20Tea%20Party">Questions? Email us</a></div></div>
   </div>
 
   <div class="event">
@@ -643,7 +647,7 @@ def events():
       <p>Grab your clubs and get ready for a day of fun, friends and giving back. Teams and sponsorships are open now.</p>
       <div class="btns" style="margin-top:0"><a class="btn btn-primary" href="{TEEUP}" target="_blank" rel="noopener">Register or sponsor</a><a class="btn btn-ghost" href="mailto:{TEE_EMAIL}">Email the tournament team</a></div></div>
   </div>
-  {DN("event details come from your three flyers and your home page. The flyers have QR codes: send us the sign-up links and we will add a real Sign up button for the Fall Festival and the Royal Tea Party. Please check every date, time and price.")}
+  {DN("event details come from your three flyers and your home page, and every button goes to the same page as the QR code on that flyer. Your current website&rsquo;s Register button for Tee Up For Autism still goes to last year&rsquo;s (7th annual) page, so we pointed ours at this year&rsquo;s. Please check every date, time and price.")}
 </div></section>
 
 <section class="band band-sky section" id="calendar">{wave(SKY, "wave wave-in")}<div class="wrap">
