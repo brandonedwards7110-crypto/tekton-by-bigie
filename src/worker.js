@@ -76,6 +76,13 @@ async function getAdminCredential(env) {
   return await env.DRAFT_CREDENTIALS.get("_admin", { type: "json" });
 }
 
+// Viewers (KV key "_viewers": [{"email","password"}]): people Brandon sets up who can open EVERY draft but not /admin.
+// Their visits are never logged as client activity and their devices get the same "ignore me" cookie as the admin's.
+async function getViewers(env) {
+  const val = await env.DRAFT_CREDENTIALS.get("_viewers", { type: "json" });
+  return Array.isArray(val) ? val : [];
+}
+
 // ---- password storage + login lockout ----
 // Temp passwords Brandon hands out stay readable (he has to send them). Anything an owner (or the admin) sets
 // themselves is stored only as a salted PBKDF2 hash, never as text. Logins lock after repeated wrong tries.
@@ -353,6 +360,9 @@ async function findMatch(env, slug, email, password) {
   if (admin && admin.email === email && (await passwordMatches(admin, password))) {
     return { scope: "*", email };
   }
+  for (const v of await getViewers(env)) {
+    if (v.email === email && (await passwordMatches(v, password))) return { scope: "viewer", email };
+  }
   const creds = await getCredentialsForSlug(env, slug);
   for (let idx = 0; idx < creds.length; idx++) {
     if (creds[idx].email === email && (await passwordMatches(creds[idx], password))) {
@@ -504,7 +514,7 @@ function redirect(location, setCookies) {
 const ME_COOKIE_VALUE = `${ME_COOKIE}=1; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${ME_TTL_SECONDS}`;
 
 function withMeCookie(response, request, session) {
-  if (!session || session.scope !== "*" || getCookie(request, ME_COOKIE) === "1") return response;
+  if (!session || (session.scope !== "*" && session.scope !== "viewer") || getCookie(request, ME_COOKIE) === "1") return response;
   const r = new Response(response.body, response);
   r.headers.append("Set-Cookie", ME_COOKIE_VALUE);
   return r;
@@ -615,6 +625,10 @@ async function renderAdminPage(env) {
     <code class="cmd">npx wrangler kv key put --binding=DRAFT_CREDENTIALS "&lt;slug&gt;" '[{"email":"person@example.com","password":"easy-password"}]'</code>
     Clients can pick their own password anytime by ticking "Change my password" on the login screen.
   </div>
+  <div class="hint">
+    Viewers (people who can open every draft but not this page; their visits are never counted as client activity): list them all in one key, replacing the whole list each time:<br>
+    <code class="cmd">npx wrangler kv key put --binding=DRAFT_CREDENTIALS --remote "_viewers" '[{"email":"person@example.com","password":"easy-password"}]'</code>
+  </div>
 </body>
 </html>`, 200, []);
 }
@@ -650,7 +664,7 @@ async function handleRequest(request, env, ctx) {
     }
 
     const session = await verifyCookie(getCookie(request, SESSION_COOKIE), secret);
-    const authorized = session && (session.scope === "*" || session.scope === slug);
+    const authorized = session && (session.scope === "*" || session.scope === slug || (session.scope === "viewer" && !isAdminRoute));
 
     if (authorized) {
       if (isAdminRoute) {
@@ -742,7 +756,8 @@ async function handleRequest(request, env, ctx) {
       if (guard.locked) {
         return htmlResponse(loginPage({ slug, isAdmin: isAdminRoute, error: "Too many wrong tries. Please wait 15 minutes, then try again." }), 429, []);
       }
-      const match = await findMatch(env, slug, email, password);
+      let match = await findMatch(env, slug, email, password);
+      if (match && match.scope === "viewer" && isAdminRoute) match = null;   // viewers can never log in to /admin
 
       if (!match) {
         if (!isAdminRoute) ctx.waitUntil(logActivity(env, slug, "failed_login", { email, request }));
@@ -755,7 +770,7 @@ async function handleRequest(request, env, ctx) {
       }
 
       const wantsChange = form.get("change_password") === "1";
-      if (match.scope !== "*" && (match.mustReset || wantsChange)) {
+      if (match.scope !== "*" && match.scope !== "viewer" && (match.mustReset || wantsChange)) {
         const resetCookie = await makeCookie({ scope: slug, email }, RESET_TTL_SECONDS, secret);
         return htmlResponse(resetPage({ slug, email }), 200, [
           `${RESET_COOKIE}=${resetCookie}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${RESET_TTL_SECONDS}`,
@@ -764,7 +779,7 @@ async function handleRequest(request, env, ctx) {
 
       const cookie = await makeCookie({ scope: match.scope, email }, SESSION_TTL_SECONDS, secret);
       const loginCookies = [`${SESSION_COOKIE}=${cookie}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`];
-      if (match.scope === "*") loginCookies.push(ME_COOKIE_VALUE);
+      if (match.scope === "*" || match.scope === "viewer") loginCookies.push(ME_COOKIE_VALUE);
       return redirect(url.pathname, loginCookies);
     }
 
