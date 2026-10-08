@@ -560,6 +560,7 @@ def gym():
     body = page_hero(trail, "The South Walton <em>Gymnasium.</em>", "A diverse range of activities and a facility that can be tailored to your next event. Open to the community on select days and times.", "Gym") + f"""
 <section class="section"><div class="wrap">
   {photo('gym-hall', 'Inside the gymnasium: a high steel-beam ceiling with bright lights, tall windows and a blue padded wall', '', 'Inside the gymnasium: high ceilings and natural light', eager=True)}
+  {DN("we cropped this photo to show only the building. Your original shows students playing, and we do not put a child&rsquo;s face on a website without a signed photo release from a parent or guardian. That protects the children and the school. Do you have signed photo releases on file, and which children or events do they cover? If you do, we can use the full photo. If you do not, we can use photos with no children in them, or you can get releases signed. Ask your attorney if you want to be sure what your school needs.")}
 </div></section>
 
 <section class="section" style="padding-top:0"><div class="wrap split">
@@ -577,7 +578,7 @@ def gym():
 <section class="band band-sky section">{wave(SKY, "wave wave-in")}<div class="wrap">
   <div class="sec-head"><p class="eyebrow">Ways to use the gym</p><h2>Play, celebrate, <em>practice.</em></h2></div>
   <div class="cards3">{uses_html}</div>
-  {DN("the gym photo is cropped to show only the building, because the original shows children. These five uses come from the cards on your Our Gym page, and the descriptions are ours. Send your real rental rates, open-play days and times, and what a birthday package includes, and we will replace these lines with exact details.")}
+  {DN("these five uses come from the cards on your Our Gym page, and the descriptions are ours. Send your real rental rates, open-play days and times, and what a birthday package includes, and we will replace these lines with exact details.")}
 </div></section>
 
 <section class="section"><div class="narrow">
