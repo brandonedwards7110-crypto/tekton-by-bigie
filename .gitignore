@@ -1,3 +1,5 @@
 .wrangler/
 node_modules/
 public/_meta/
+tools/contracts/node_modules/
+tools/contracts/out/
