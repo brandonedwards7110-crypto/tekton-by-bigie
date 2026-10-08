@@ -419,7 +419,7 @@ def school():
   <div class="sec-head"><p class="eyebrow">Our team</p><h2>The people who <em>show up every day.</em></h2>
     <p class="lede">Our dedicated staff are passionate people committed to nurturing every student&rsquo;s potential, each bringing their own expertise.</p></div>
   {team_html()}
-  {DN("names, roles and portraits are the ones on your current Our Staff page (first name and last initial). Tell us if anyone should be added, removed or listed differently. Two people have no portrait yet, so they show initials.")}
+  {DN("names, roles and portraits are the ones on your current Our Staff page (first name and last initial). Tell us if anyone should be added, removed or listed differently. We still need a proper portrait for Dr. Ashley P. (the photo on your current site is a full-length group photo) to match everyone else&rsquo;s, and portraits for Emily D. (ED) and Life Skills (LS), who show initials for now.")}
 </div></section>
 {tour_band("Meet the team in person")}"""
     write(path, assemble(path, "The School | South Walton Academy, Santa Rosa Beach FL", desc, path, body, [crumbs_ld(trail), org_ld()]))
