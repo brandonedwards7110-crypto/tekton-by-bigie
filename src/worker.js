@@ -188,14 +188,19 @@ async function processForgotRequest(env, request, slug, pathname, emailInput) {
     if (!email.includes("@")) return;
     if (!(await forgotAllowed(env, "forgotip:" + clientIp(request), 10, 3600))) return;
     const creds = await getCredentialsForSlug(env, slug);
-    const cred = creds.find((c) => String(c.email || "").toLowerCase() === email);
+    let cred = creds.find((c) => String(c.email || "").toLowerCase() === email);
+    let viewer = false;
+    if (!cred) {   // viewers can reset from any draft's login page; it changes the viewer login, never a client's
+      cred = (await getViewers(env)).find((v) => String(v.email || "").toLowerCase() === email);
+      viewer = !!cred;
+    }
     if (!cred) return;
-    if (!(await forgotAllowed(env, "forgot:" + slug + ":" + email, 3, 3600))) return;
+    if (!(await forgotAllowed(env, "forgot:" + (viewer ? "viewer" : slug) + ":" + email, 3, 3600))) return;
     const token = bytesToHex(crypto.getRandomValues(new Uint8Array(32)));
-    await resetTokenCall(env, token, "reset_put", { slug, email: cred.email, exp: Date.now() + RESET_LINK_TTL_SECONDS * 1000 });
+    await resetTokenCall(env, token, "reset_put", { slug, email: cred.email, viewer, exp: Date.now() + RESET_LINK_TTL_SECONDS * 1000 });
     const link = `${SITE_ORIGIN}${pathname}?reset=${token}`;
     await sendResetEmail(env, cred.email, link);
-    await logActivity(env, slug, "reset_requested", { email: cred.email, request });
+    if (!viewer) await logActivity(env, slug, "reset_requested", { email: cred.email, request });
   } catch (e) {
     console.error("forgot-password email failed:", e && e.code, e && e.message);
   }
@@ -226,7 +231,7 @@ export class LoginGuard {
     const rec = await this.state.storage.get("reset");
     if (!rec || rec.exp < now) { await this.state.storage.deleteAll(); return json({ valid: false }); }
     if (action === "reset_take") await this.state.storage.deleteAll(); // single use
-    return json({ valid: true, slug: rec.slug, email: rec.email });
+    return json({ valid: true, slug: rec.slug, email: rec.email, viewer: !!rec.viewer });
   }
   async fetch(request) {
     const action = new URL(request.url).pathname.slice(1);
@@ -709,6 +714,18 @@ async function handleRequest(request, env, ctx) {
         }
         const taken = await takeResetToken(env, token); // single use: only one request can win this
         if (!taken.valid || taken.slug !== slug) return expired();
+        if (taken.viewer) {   // a viewer's reset: update the viewer list (scrambled), keep them out of every client's activity log
+          const viewers = await getViewers(env);
+          const vi = viewers.findIndex((v) => v.email === info.email);
+          if (vi === -1) {
+            return htmlResponse(loginPage({ slug, isAdmin: false, error: "Account not found. Ask Brandon for help." }), 400, []);
+          }
+          viewers[vi] = { email: viewers[vi].email, ...(await newPasswordRecord(newPassword)), changedByOwner: true, changedAt: Date.now() };
+          await env.DRAFT_CREDENTIALS.put("_viewers", JSON.stringify(viewers));
+          ctx.waitUntil(guardCall(env, slug, request, "ok"));
+          const vcookie = await makeCookie({ scope: "viewer", email: info.email }, SESSION_TTL_SECONDS, secret);
+          return redirect(url.pathname, [`${SESSION_COOKIE}=${vcookie}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`, ME_COOKIE_VALUE]);
+        }
         const creds = await getCredentialsForSlug(env, slug);
         const idx = creds.findIndex((c) => c.email === info.email);
         if (idx === -1) {
