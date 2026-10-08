@@ -82,6 +82,27 @@ async function getViewers(env) {
   const val = await env.DRAFT_CREDENTIALS.get("_viewers", { type: "json" });
   return Array.isArray(val) ? val : [];
 }
+async function saveViewers(env, list) {
+  await env.DRAFT_CREDENTIALS.put("_viewers", JSON.stringify(list));
+}
+// Each viewer has a "drafts" list of slugs they may open (set with the checkboxes on /admin). No list = no drafts.
+async function viewerCanSee(env, email, slug) {
+  const v = (await getViewers(env)).find((x) => x.email === email);
+  return !!v && Array.isArray(v.drafts) && v.drafts.includes(slug);
+}
+const SLUG_RE = /^[a-z0-9][a-z0-9_-]{0,80}$/i;
+// Every draft that exists: the generated list (tools/gen_drafts_index.py, rebuilt on each deploy) + any slug that has a client login.
+async function listDrafts(env, extraSlugs) {
+  const out = new Map();
+  try {
+    const r = await env.ASSETS.fetch(new Request("https://tektonbybigie.com/_meta/draft/drafts.json"));
+    if (r.ok) for (const d of await r.json()) out.set(d.slug, d.name || d.slug);
+  } catch (e) { /* fall through to the KV slugs */ }
+  const keys = await env.DRAFT_CREDENTIALS.list();
+  for (const k of keys.keys) if (!k.name.startsWith("_") && !out.has(k.name)) out.set(k.name, k.name);
+  for (const s of extraSlugs || []) if (!out.has(s)) out.set(s, s);
+  return [...out.entries()].map(([slug, name]) => ({ slug, name })).sort((a, b) => a.name.localeCompare(b.name));
+}
 
 // ---- password storage + login lockout ----
 // Temp passwords Brandon hands out stay readable (he has to send them). Anything an owner (or the admin) sets
@@ -336,6 +357,38 @@ async function logActivity(env, slug, type, { email, request }) {
   }
 }
 
+// Viewer activity: one key for all viewers. Never mixed into a client's own log. Claude's own tests (TektonCheck UA) are ignored.
+const VIEWER_ACTIVITY_KEY = "_viewer_activity";
+async function logViewer(env, email, type, slug, request) {
+  try {
+    const ua = request.headers.get("User-Agent") || "";
+    if (isBotUA(ua)) return;
+    const data = (await env.DRAFT_CREDENTIALS.get(VIEWER_ACTIVITY_KEY, { type: "json" })) || {};
+    const v = (data[email] = data[email] || {});
+    v.events = Array.isArray(v.events) ? v.events : [];
+    v.drafts = v.drafts || {};
+    const d = (v.drafts[slug] = v.drafts[slug] || { count: 0 });
+    const cf = request.cf || {};
+    const loc = [cf.city, cf.region, cf.country].filter(Boolean).join(", ");
+    const device = describeUA(ua);
+    const now = Date.now();
+    if (type === "view" || type === "no_access") {
+      const k = type === "view" ? "lastAt" : "lastDeniedAt";
+      if (d[k] && now - d[k] < VIEW_THROTTLE_MS) return;
+      d[k] = now;
+      if (type === "view") d.count = (d.count || 0) + 1;
+    } else {
+      const last = v.events[0];
+      if (last && last.type === type && last.slug === slug && last.device === device && now - last.t < DUPE_WINDOW_MS) return;
+      if (type === "login") { v.loginCount = (v.loginCount || 0) + 1; v.lastLoginAt = now; }
+    }
+    v.lastSeenAt = now;
+    v.events.unshift({ t: now, type, slug, device, loc });
+    v.events = v.events.slice(0, 80);
+    await env.DRAFT_CREDENTIALS.put(VIEWER_ACTIVITY_KEY, JSON.stringify(data));
+  } catch (e) { /* tracking must never break the draft site */ }
+}
+
 const TZ = "America/Chicago";
 function fmtTime(ms) {
   return new Date(ms).toLocaleString("en-US", { timeZone: TZ, month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " CT";
@@ -366,7 +419,7 @@ async function findMatch(env, slug, email, password) {
     return { scope: "*", email };
   }
   for (const v of await getViewers(env)) {
-    if (v.email === email && (await passwordMatches(v, password))) return { scope: "viewer", email };
+    if (String(v.email).toLowerCase() === String(email).toLowerCase() && (await passwordMatches(v, password))) return { scope: "viewer", email: v.email };
   }
   const creds = await getCredentialsForSlug(env, slug);
   for (let idx = 0; idx < creds.length; idx++) {
@@ -525,6 +578,94 @@ function withMeCookie(response, request, session) {
   return r;
 }
 
+async function noAccessPage(env, email) {
+  const v = (await getViewers(env)).find((x) => x.email === email);
+  const drafts = await listDrafts(env, []);
+  const mine = v && Array.isArray(v.drafts) ? drafts.filter((d) => v.drafts.includes(d.slug)) : [];
+  const links = mine.length
+    ? `<p>Drafts you can open:</p><ul>${mine.map((d) => `<li><a href="/${escapeHtml(d.slug)}/draft/">${escapeHtml(d.name)}</a></li>`).join("")}</ul>`
+    : "<p>No drafts are turned on for you yet.</p>";
+  return pageShell("No access", `<h1>This draft isn't turned on for you</h1><p>You're signed in, but Brandon hasn't opened this one to you. Ask him to turn it on.</p>${links}`);
+}
+
+// Admin-page actions for viewers (all passwords are stored scrambled; the typed password is only shown once, at creation, by Brandon's own typing).
+async function viewerAdminAction(env, form) {
+  const action = String(form.get("action") || "");
+  const email = String(form.get("email") || "").trim().toLowerCase();
+  const viewers = await getViewers(env);
+  const idx = viewers.findIndex((v) => String(v.email).toLowerCase() === email);
+  const dropActivity = async (e) => {
+    const act = (await env.DRAFT_CREDENTIALS.get(VIEWER_ACTIVITY_KEY, { type: "json" })) || {};
+    delete act[e];
+    await env.DRAFT_CREDENTIALS.put(VIEWER_ACTIVITY_KEY, JSON.stringify(act));
+  };
+  if (action === "add_viewer") {
+    const name = String(form.get("name") || "").trim().slice(0, 60);
+    const password = String(form.get("password") || "");
+    if (!email.includes("@") || password.length < 6 || idx !== -1) return;
+    viewers.push({ email, name, ...(await newPasswordRecord(password)), drafts: [], createdAt: Date.now() });
+    await saveViewers(env, viewers);
+    return;
+  }
+  if (idx === -1) return;
+  if (action === "save_viewer") {
+    viewers[idx].drafts = [...new Set(form.getAll("drafts").map(String).filter((s) => SLUG_RE.test(s)))];
+    await saveViewers(env, viewers);
+  } else if (action === "set_viewer_password") {
+    const password = String(form.get("password") || "");
+    if (password.length < 6) return;
+    const { password: _old, hash: _h, salt: _s, iter: _i, changedByOwner: _c, changedAt: _t, ...keep } = viewers[idx];
+    viewers[idx] = { ...keep, ...(await newPasswordRecord(password)) };
+    await saveViewers(env, viewers);
+  } else if (action === "remove_viewer") {
+    const gone = viewers[idx].email;
+    viewers.splice(idx, 1);
+    await saveViewers(env, viewers);
+    await dropActivity(gone);
+  } else if (action === "clear_viewer_activity") {
+    await dropActivity(viewers[idx].email);
+  }
+}
+
+const VIEWER_EVENT_LABELS = { login: "Logged in", view: "Opened", no_access: "Tried to open (turned off)", password_set: "Set a new password" };
+
+async function viewersSection(env) {
+  const viewers = await getViewers(env);
+  const act = (await env.DRAFT_CREDENTIALS.get(VIEWER_ACTIVITY_KEY, { type: "json" })) || {};
+  const drafts = await listDrafts(env, viewers.flatMap((v) => v.drafts || []));
+  const nameOf = (slug) => (drafts.find((d) => d.slug === slug) || {}).name || slug;
+  const cards = viewers.map((v) => {
+    const a = act[v.email] || {};
+    const status = a.lastLoginAt
+      ? `<span class="st ok">Logged in ${escapeHtml(ago(a.lastLoginAt))}</span>`
+      : '<span class="st none">Hasn\'t logged in yet</span>';
+    const boxes = drafts.map((d) => `<label class="vbox"><input type="checkbox" name="drafts" value="${escapeHtml(d.slug)}"${(v.drafts || []).includes(d.slug) ? " checked" : ""} onchange="this.form.submit()"> ${escapeHtml(d.name)}</label>`).join("");
+    const opened = Object.entries(a.drafts || {}).filter(([, d]) => d.count).sort((x, y) => (y[1].lastAt || 0) - (x[1].lastAt || 0))
+      .map(([slug, d]) => `<li><b>${escapeHtml(nameOf(slug))}</b> &mdash; ${d.count} visit${d.count === 1 ? "" : "s"}, last ${escapeHtml(ago(d.lastAt))}</li>`).join("");
+    const evs = (a.events || []).slice(0, 25).map((e) => `
+      <li><span class="when">${escapeHtml(fmtTime(e.t))}</span> <b>${escapeHtml(VIEWER_EVENT_LABELS[e.type] || e.type)}</b> <span class="muted">${escapeHtml(nameOf(e.slug))}</span>
+        <div class="meta">${escapeHtml([e.device, e.loc].filter(Boolean).join(" · ") || "unknown")}</div></li>`).join("");
+    const activity = evs
+      ? `<details><summary>What ${escapeHtml(v.name || v.email)} has opened${a.lastSeenAt ? " &mdash; last seen " + escapeHtml(ago(a.lastSeenAt)) : ""}</summary>
+          ${opened ? `<ul class="events">${opened}</ul>` : ""}<ul class="events">${evs}</ul>
+          <form method="POST" action="/admin" onsubmit="return confirm('Clear the activity log for this viewer?')"><input type="hidden" name="action" value="clear_viewer_activity"><input type="hidden" name="email" value="${escapeHtml(v.email)}"><button class="clear" type="submit">Clear log</button></form></details>`
+      : '<div class="sub">No activity yet.</div>';
+    return `<div class="vcard">
+      <div class="vhead"><b>${escapeHtml(v.name || "(no name)")}</b> <span class="muted">${escapeHtml(v.email)}</span> ${status}</div>
+      <form method="POST" action="/admin" class="vgrid"><input type="hidden" name="action" value="save_viewer"><input type="hidden" name="email" value="${escapeHtml(v.email)}">${boxes || '<span class="muted">No drafts found.</span>'}</form>
+      ${activity}
+      <div class="vtools">
+        <form method="POST" action="/admin"><input type="hidden" name="action" value="set_viewer_password"><input type="hidden" name="email" value="${escapeHtml(v.email)}"><input name="password" placeholder="new password (min 6)" minlength="6" required> <button class="clear" type="submit">Set password</button></form>
+        <form method="POST" action="/admin" onsubmit="return confirm('Remove ${escapeHtml(v.name || v.email)} as a viewer?')"><input type="hidden" name="action" value="remove_viewer"><input type="hidden" name="email" value="${escapeHtml(v.email)}"><button class="clear" type="submit">Remove viewer</button></form>
+      </div></div>`;
+  }).join("");
+  return `<h2 class="vh">Viewers <span class="muted">&mdash; people who aren't clients. Tick a draft to turn it on for them; nothing is on until you tick it.</span></h2>
+  ${cards || '<div class="muted" style="margin-bottom:14px">No viewers yet.</div>'}
+  <form method="POST" action="/admin" class="vadd"><input type="hidden" name="action" value="add_viewer">
+    <input name="name" placeholder="Name" required> <input name="email" type="email" placeholder="Email" required> <input name="password" placeholder="Password (min 6)" minlength="6" required> <button class="clear" type="submit">Add viewer</button>
+  </form>`;
+}
+
 async function renderAdminPage(env) {
   const list = await env.DRAFT_CREDENTIALS.list();
   const rows = [];
@@ -581,6 +722,9 @@ async function renderAdminPage(env) {
       <td>${activityCell(r)}</td>
     </tr>`).join("");
 
+  let viewersHtml;
+  try { viewersHtml = await viewersSection(env); }
+  catch (e) { viewersHtml = `<div class="hint">The Viewers section failed to load (${escapeHtml(String(e && e.message))}). The client table above still works.</div>`; }
   return htmlResponse(`<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -614,6 +758,14 @@ async function renderAdminPage(env) {
   .meta{font-size:0.72rem;color:#6C6E75;margin-top:2px;}
   button.clear{background:none;border:1px solid #2C2E33;color:#8B8D94;border-radius:5px;padding:5px 10px;font-family:'IBM Plex Mono',monospace;font-size:0.68rem;cursor:pointer;}
   button.clear:hover{border-color:#a55;color:#e88;}
+  h2.vh{font-size:1.15rem;margin:38px 0 14px 0;} h2.vh .muted{font-size:0.78rem;font-weight:400;}
+  .vcard{border:1px solid #2C2E33;border-radius:8px;padding:16px 18px;margin-bottom:14px;background:#17191C;}
+  .vhead{margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+  .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px 18px;margin-bottom:12px;}
+  .vbox{font-size:0.84rem;display:flex;gap:8px;align-items:center;cursor:pointer;} .vbox input{width:17px;height:17px;accent-color:var(--accent);}
+  .vtools{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;align-items:center;} .vtools form{display:flex;gap:8px;align-items:center;}
+  .vadd{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+  .vcard input[name=password],.vadd input{background:#0F1012;border:1px solid #2C2E33;color:var(--ink);border-radius:5px;padding:7px 10px;font-family:'IBM Plex Mono',monospace;font-size:0.76rem;}
 </style>
 </head>
 <body>
@@ -622,6 +774,7 @@ async function renderAdminPage(env) {
     <tr><th>Client</th><th>Logins</th><th>Status</th><th>Activity</th></tr>
     ${tableRows || '<tr><td colspan="4" class="muted">No client credentials set yet.</td></tr>'}
   </table>
+  ${viewersHtml}
   <div class="hint">
     Activity tracking began 2026-10-02 &mdash; earlier visits weren't recorded. Times are Central. Any phone or computer where you've logged in as admin is ignored automatically (log in with your admin email once on each device, then test freely). Bots/link-preview crawlers are filtered out too. This page can lag up to a minute behind real activity.
   </div>
@@ -631,8 +784,7 @@ async function renderAdminPage(env) {
     Clients can pick their own password anytime by ticking "Change my password" on the login screen.
   </div>
   <div class="hint">
-    Viewers (people who can open every draft but not this page; their visits are never counted as client activity): list them all in one key, replacing the whole list each time:<br>
-    <code class="cmd">npx wrangler kv key put --binding=DRAFT_CREDENTIALS --remote "_viewers" '[{"email":"person@example.com","password":"easy-password"}]'</code>
+    Viewers log in on any draft's login page with their own email and password. They can never open this page, they only see the drafts you've ticked, and their visits are never counted as client activity (they're logged in the Viewers section instead). Viewers can reset their own password with "Forgot password?" on any draft login page. New drafts show up in the list after the next deploy and start turned off for everyone.
   </div>
 </body>
 </html>`, 200, []);
@@ -669,7 +821,16 @@ async function handleRequest(request, env, ctx) {
     }
 
     const session = await verifyCookie(getCookie(request, SESSION_COOKIE), secret);
-    const authorized = session && (session.scope === "*" || session.scope === slug || (session.scope === "viewer" && !isAdminRoute));
+    let authorized = session && (session.scope === "*" || session.scope === slug);
+    let viewerAccess = false;
+    if (!authorized && session && session.scope === "viewer" && !isAdminRoute) {
+      if (await viewerCanSee(env, session.email, slug)) {
+        authorized = true; viewerAccess = true;
+      } else {
+        if (request.method === "GET" && isHtmlNavigation(request, url)) ctx.waitUntil(logViewer(env, session.email, "no_access", slug, request));
+        return htmlResponse(await noAccessPage(env, session.email), 403, []);
+      }
+    }
 
     if (authorized) {
       if (isAdminRoute) {
@@ -678,6 +839,8 @@ async function handleRequest(request, env, ctx) {
           if (form.get("action") === "clear_activity") {
             const target = String(form.get("slug") || "");
             if (target && target !== "_admin") await env.DRAFT_CREDENTIALS.delete(ACTIVITY_PREFIX + target);
+          } else {
+            await viewerAdminAction(env, form);
           }
           return redirect("/admin", []);
         }
@@ -685,6 +848,9 @@ async function handleRequest(request, env, ctx) {
       }
       if (session.scope === slug && request.method === "GET" && isHtmlNavigation(request, url)) {
         ctx.waitUntil(logActivity(env, slug, "view", { email: session.email, request }));
+      }
+      if (viewerAccess && request.method === "GET" && isHtmlNavigation(request, url)) {
+        ctx.waitUntil(logViewer(env, session.email, "view", slug, request));
       }
       return withMeCookie(await env.ASSETS.fetch(request), request, session);
     }
@@ -720,9 +886,11 @@ async function handleRequest(request, env, ctx) {
           if (vi === -1) {
             return htmlResponse(loginPage({ slug, isAdmin: false, error: "Account not found. Ask Brandon for help." }), 400, []);
           }
-          viewers[vi] = { email: viewers[vi].email, ...(await newPasswordRecord(newPassword)), changedByOwner: true, changedAt: Date.now() };
+          const { password: _old, hash: _h, salt: _s, iter: _i, ...keepFields } = viewers[vi];
+          viewers[vi] = { ...keepFields, ...(await newPasswordRecord(newPassword)), changedByOwner: true, changedAt: Date.now() };
           await env.DRAFT_CREDENTIALS.put("_viewers", JSON.stringify(viewers));
           ctx.waitUntil(guardCall(env, slug, request, "ok"));
+          ctx.waitUntil(logViewer(env, info.email, "password_set", slug, request));
           const vcookie = await makeCookie({ scope: "viewer", email: info.email }, SESSION_TTL_SECONDS, secret);
           return redirect(url.pathname, [`${SESSION_COOKIE}=${vcookie}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`, ME_COOKIE_VALUE]);
         }
@@ -785,6 +953,7 @@ async function handleRequest(request, env, ctx) {
       if (!isAdminRoute && match.scope === slug) {
         ctx.waitUntil(logActivity(env, slug, "login", { email, request }));
       }
+      if (match.scope === "viewer") ctx.waitUntil(logViewer(env, match.email, "login", slug, request));
 
       const wantsChange = form.get("change_password") === "1";
       if (match.scope !== "*" && match.scope !== "viewer" && (match.mustReset || wantsChange)) {
@@ -794,7 +963,7 @@ async function handleRequest(request, env, ctx) {
         ]);
       }
 
-      const cookie = await makeCookie({ scope: match.scope, email }, SESSION_TTL_SECONDS, secret);
+      const cookie = await makeCookie({ scope: match.scope, email: match.email || email }, SESSION_TTL_SECONDS, secret);
       const loginCookies = [`${SESSION_COOKIE}=${cookie}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`];
       if (match.scope === "*" || match.scope === "viewer") loginCookies.push(ME_COOKIE_VALUE);
       return redirect(url.pathname, loginCookies);

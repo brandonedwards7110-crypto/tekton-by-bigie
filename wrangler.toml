@@ -23,6 +23,9 @@ name = "EMAIL"
 tag = "v1"
 new_sqlite_classes = ["LoginGuard"]
 
+[build]
+command = "python3 tools/gen_drafts_index.py"
+
 [assets]
 directory = "./public"
 binding = "ASSETS"
