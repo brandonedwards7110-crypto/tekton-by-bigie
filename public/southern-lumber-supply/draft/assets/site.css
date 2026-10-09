@@ -284,3 +284,29 @@ footer .small{font-size:.92rem;line-height:1.5}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 @media print{.util,.ghost-bar,.menu-btn{display:none!important}body{padding:0}}
+
+/* ---- Installit! standalone brand (body.ii): own palette, header, hero and footer; stays linked to the main site ---- */
+body.ii{--red:#c4122f;--red-dk:#8f0d22;--red-lt:#e0223f;--cream:#f2f2f0;--line:#dcdcd8}
+.ii-util{background:#111;color:#e8e8e6}
+.ii-util a{color:#fff}
+.ii-logo{height:60px;width:auto;display:block}
+body.ii .top-inner{padding:8px 0}
+body.ii nav.main{gap:6px}
+.ii-hero{background:linear-gradient(115deg,#0e0e0f 0%,#1c1c1f 58%,#2a0b12 100%);color:#fff;padding:72px 0 78px;position:relative;overflow:hidden}
+.ii-hero-in{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;position:relative;z-index:1}
+.ii-hero h1{color:#fff;font-size:clamp(2.6rem,5.2vw,4.4rem);margin:.1em 0 .3em;max-width:none}
+.ii-hero h1 em{font-style:normal;color:var(--red-lt)}
+.ii-hero .kicker{color:#ff8a9b}
+.ii-hero .kicker::before{background:#ff8a9b}
+.ii-hero .lede{color:#dcdcda;max-width:34em}
+.ii-points{list-style:none;margin:26px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px 22px;font-family:var(--head);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;font-size:1.05rem}
+.ii-points li::before{content:"\2713";color:var(--red-lt);margin-right:8px}
+.ii-hero-photo img{border-radius:8px;box-shadow:0 22px 50px rgba(0,0,0,.5);width:100%;aspect-ratio:4/3;object-fit:cover}
+.ii-tiles{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.ii-tile{border-top:4px solid var(--red)}
+.ii-footer{background:#0c0c0d}
+.ii-fgrid{display:grid;grid-template-columns:1.3fr 1fr 1fr 1.2fr;gap:32px}
+.ii-logo-chip{display:inline-block;background:#fff;padding:10px 18px;border-radius:4px;margin-bottom:14px}
+.ii-logo-chip .ii-logo{height:52px}
+@media(max-width:960px){.ii-hero-in{grid-template-columns:1fr;gap:34px}.ii-fgrid{grid-template-columns:repeat(2,1fr)}.ii-hero{padding:48px 0 54px}}
+@media(max-width:640px){.ii-fgrid{grid-template-columns:1fr}.ii-logo{height:46px}.ii-util .l span{display:none}}

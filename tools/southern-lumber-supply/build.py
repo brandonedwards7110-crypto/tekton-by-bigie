@@ -81,7 +81,7 @@ def crumbs_ld(trail):
             "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": html.unescape(n), "item": ORIGIN + u(p)} for i, (n, p) in enumerate(trail)]}
 
 
-def head(title, desc, path, blocks):
+def head(title, desc, path, blocks, bc=""):
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -104,7 +104,7 @@ def head(title, desc, path, blocks):
 <link rel="stylesheet" href="{u('assets/site.css')}">
 {ld(blocks)}
 </head>
-<body>
+<body{(' class="' + bc + '"') if bc else ""}>
 <a class="skip" href="#main">Skip to content</a>
 """
 
@@ -367,27 +367,97 @@ def products():
 
 
 # ================================================================== INSTALLIT!
+II_LOGO = lambda cls="": f'<img class="{cls}" src="{u("assets/photos/installit-logo.png")}" alt="Installit! by Southern Lumber &amp; Supply">'
+
+
+def ii_header():
+    links = [("What we install", "#install"), ("How it works", "#how"), ("Showroom", "#showroom"), ("Free consultation", "#consult")]
+    nav = "".join(f'<a href="{h}">{n}</a>' for n, h in links)
+    m = "".join(f'<a href="{h}">{n}</a>' for n, h in links) + f'<a href="{u()}">Southern Lumber &amp; Supply home</a>'
+    return f"""<div class="util ii-util"><div class="wrap">
+  <div class="l"><a href="tel:{TEL_AL}">Call {PH_AL}</a><span>Showroom: 3246 Ross Clark Cir #1, Dothan, AL</span></div>
+  <div class="r"><a href="{u()}">&larr; Southern Lumber &amp; Supply</a></div>
+</div></div>
+<header class="top"><div class="wrap top-inner">
+  <a class="brand" href="{u('installit/')}" aria-label="Installit! by Southern Lumber &amp; Supply, home">{II_LOGO('ii-logo')}</a>
+  <nav class="main" aria-label="Installit!">{nav}</nav>
+  <div class="top-cta"><a class="btn" href="tel:{TEL_AL}">Call {PH_AL}</a><button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="mnav">Menu</button></div>
+</div></header>
+<nav class="mnav" id="mnav" aria-label="Mobile">{m}</nav>
+<main id="main">
+"""
+
+
+def ii_footer():
+    return f"""</main>
+<footer class="site-footer ii-footer"><div class="wrap">
+  <div class="ii-fgrid">
+    <div><span class="ii-logo-chip">{II_LOGO('ii-logo')}</span>
+      <p class="small">Windows, doors, cabinets, siding and decks: you pick it out and our pros install it. Serving the Wiregrass area and the Florida Panhandle.</p>
+      <div class="social"><a href="{FB}" target="_blank" rel="noopener">Facebook</a><a href="{IG}" target="_blank" rel="noopener">Instagram</a></div></div>
+    <div><h4>Showroom</h4><p class="small">3246 Ross Clark Cir #1<br>Dothan, AL 36303<br><a href="tel:{TEL_AL}">{PH_AL}</a><br>Mon&ndash;Fri 9:00 AM &ndash; 5:00 PM<br>Sat &amp; Sun closed</p>
+      <p class="small"><a href="{dirs(S['dothan-installit'])}" target="_blank" rel="noopener">Get directions</a></p></div>
+    <div><h4>Installit!</h4><ul><li><a href="#install">What we install</a></li><li><a href="#how">How it works</a></li><li><a href="#showroom">Showroom</a></li><li><a href="#consult">Free consultation</a></li></ul></div>
+    <div><h4>By Southern Lumber &amp; Supply</h4><ul><li><a href="{u()}">Southern Lumber &amp; Supply home</a></li><li><a href="{u('locations/')}">All four stores</a></li><li><a href="{u('pro-desk/')}">Pro Desk for contractors</a></li><li><a href="{LIVE}/" target="_blank" rel="noopener">Shop online</a></li></ul></div>
+  </div>
+  <div class="fbase">&copy; 2026 Installit! by Southern Lumber &amp; Supply &middot; Dothan, AL
+    <p class="note" style="margin-top:16px">[Draft preview &mdash; Installit! is built here as its own brand with its own look, navigation and footer, and it stays linked to Southern Lumber &amp; Supply. It can live at southernlumbersupply.com/installit or, if you want, on its own web address.]</p></div>
+</div></footer>
+
+<div class="ghost-bar">
+  <div class="ghost-bar-chevrons"><span class="ghost-chevron down"><span></span><span></span></span><span class="ghost-chevron up"><span></span><span></span></span></div>
+  <p>tektonbybigie.com/southern-lumber-supply/draft/installit &mdash; Powered by <a href="https://tektonbybigie.com" target="_blank" rel="noopener noreferrer">Tekton by Bigie</a></p>
+</div>
+<script src="{u('assets/site.js')}"></script>
+</body>
+</html>
+"""
+
+
 def installit():
     path = "installit/"; trail = [("Home", ""), ("Installit!", path)]
-    body = page_hero(trail, "Installit!", "You pick it out, and let our pros take care of the installation.", "store-installit") + f"""
-<section class="section"><div class="wrap split">
-  <div><img class="logo-chip" style="height:78px" src="{u('assets/photos/installit-logo.png')}" alt="Installit!">
-    <h2>The area&rsquo;s one-stop shop for home improvement.</h2>
-    <p>Proudly serving the Wiregrass area and the Florida Panhandle, we sell and install windows, doors, cabinets, siding, decks and so much more. Our customers range from homeowners to commercial businesses.</p>
-    <p>No matter the project, Installit! by Southern Lumber &amp; Supply has relationships with nationwide suppliers to fit your needs, and if you like, we will take care of the installation. Our experienced sales staff and elite installers are ready to meet with you.</p>
-    <ul class="checks"><li>Free consultations at your home or in our showroom</li><li>Financing available upon request</li><li>Installation, in-store showroom, doors &amp; windows, contractor services, free assembly</li></ul>
-    <div class="btns"><a class="btn" href="tel:{TEL_AL}">Call {PH_AL}</a><a class="btn ghost" href="{u('contact/')}">Request a consultation</a></div></div>
-  {photo('install-door', 'An Installit! installer fitting a sliding glass door', 'wide')}
+    what = [("Windows &amp; doors", "Sold and installed by our team."),
+            ("Cabinets", "Pick them out in the showroom; our installers fit them."),
+            ("Siding", "For homeowners and commercial customers."),
+            ("Decks", "Installed by our crew."),
+            ("Screen rooms", "Free project estimates at our Bic Road store.")]
+    tiles = "".join(f'<div class="card ii-tile"><h3>{n}</h3><p>{t}</p></div>' for n, t in what)
+    body = f"""
+<section class="ii-hero"><div class="wrap ii-hero-in">
+  <div><p class="kicker">Installit! &middot; Dothan, AL &amp; the Florida Panhandle</p>
+    <h1>You pick it out.<br><em>We install it.</em></h1>
+    <p class="lede">Windows, doors, cabinets, siding, decks and more, sold and installed by one team. Free consultations at your home or in our showroom.</p>
+    <div class="btns"><a class="btn" href="tel:{TEL_AL}">Call {PH_AL}</a><a class="btn outline-w" href="#consult">Free consultation</a></div>
+    <ul class="ii-points"><li>Free consultations</li><li>Financing available upon request</li><li>Homeowners &amp; commercial</li></ul></div>
+  {photo('install-door', 'An Installit! installer fitting a sliding glass door', 'ii-hero-photo', eager=True)}
 </div></section>
-<section class="section cream"><div class="wrap"><div class="head"><p class="kicker">How it works</p><h2>From idea to installed.</h2></div>
+
+<section class="section" id="install"><div class="wrap"><div class="head"><p class="kicker">What we install</p><h2>One call. Sold, installed, done.</h2>
+  <p class="lede">Proudly serving the Wiregrass area and the Florida Panhandle, we sell and install windows, doors, cabinets, siding, decks and so much more. Our customers range from homeowners to commercial businesses.</p></div>
+  <div class="cards ii-tiles">{tiles}</div>
+  {DN("the list of what you install comes from your current Installit! page and your Instagram. Tell us anything to add or remove, and send before-and-after photos of finished installs.")}</div></section>
+
+<section class="section cream" id="how"><div class="wrap"><div class="head"><p class="kicker">How it works</p><h2>From idea to installed.</h2></div>
   <div class="cards"><div class="card"><h3>1. Free consultation</h3><p>Meet with our sales staff at your home or in the showroom. We help you complete your project on time and within budget.</p></div>
   <div class="card"><h3>2. Pick it out</h3><p>Choose windows, doors, cabinets, siding or decking from the showroom and our supplier network.</p></div>
-  <div class="card"><h3>3. We install it</h3><p>Our experienced installers handle the installation, so the finished job is done right.</p></div></div></div></section>
-<section class="section"><div class="wrap"><div class="cards two">{store_card(S['dothan-installit'])}<div class="card"><h3>What we install</h3><ul class="checks"><li>Windows &amp; doors</li><li>Cabinets</li><li>Siding</li><li>Decks</li><li>Screen rooms</li></ul>
-  {DN("the list of what you install comes from your Installit! page and your Instagram. Tell us anything to add or remove, and send before-and-after photos of finished installs.")}</div></div></div></section>
-{cta_band("Ready for a free consultation?", "334-489-WOOD &middot; 3246 Ross Clark Cir #1, Dothan, AL")}"""
-    write(path, assemble(path, "Installit! Window, Door & Cabinet Installation in Dothan, AL | Southern Lumber & Supply",
-                         "Installit! by Southern Lumber & Supply sells and installs windows, doors, cabinets, siding and decks in Dothan, AL and the Florida Panhandle. Free consultations.", "installit", body, [crumbs_ld(trail), org_ld(), store_ld(S['dothan-installit'])]))
+  <div class="card"><h3>3. We install it</h3><p>Our experienced installers handle the installation, so the finished job is done right.</p></div></div>
+  <p style="margin-top:26px">No matter the project, Installit! by Southern Lumber &amp; Supply has relationships with nationwide suppliers to fit your needs, and if you like, we will take care of the installation. Contractor services and free assembly are available too.</p></div></section>
+
+<section class="section" id="showroom"><div class="wrap split">
+  <div><p class="kicker">The showroom</p><h2>Come see it in person.</h2>
+    <p>Our Installit! showroom is at 3246 Ross Clark Cir #1 in Dothan. Stop in Monday to Friday, 9:00 AM to 5:00 PM, or call and we will set a time to meet at your home.</p>
+    <div class="btns"><a class="btn" href="{dirs(S['dothan-installit'])}" target="_blank" rel="noopener">Get directions</a><a class="btn ghost" href="tel:{TEL_AL}">Call {PH_AL}</a></div></div>
+  {photo('store-installit', 'The Installit! showroom storefront on Ross Clark Circle in Dothan', 'wide')}
+</div></section>
+
+<section class="section red cta" id="consult"><div class="wrap"><h2>Ready for a free consultation?</h2>
+  <p class="lede" style="margin-inline:auto;color:#f3d9dc">{PH_AL} &middot; 3246 Ross Clark Cir #1, Dothan, AL</p>
+  <div class="btns"><a class="btn light" href="tel:{TEL_AL}">Call {PH_AL}</a><a class="btn outline-w" href="{u('contact/')}">Send a message</a></div></div></section>
+"""
+    full = head("Installit! Window, Door & Cabinet Installation in Dothan, AL | Installit! by Southern Lumber & Supply",
+                "Installit! by Southern Lumber & Supply sells and installs windows, doors, cabinets, siding and decks in Dothan, AL and the Florida Panhandle. Free consultations.",
+                path, [crumbs_ld(trail), org_ld(), store_ld(S['dothan-installit'])], bc="ii") + ii_header() + body + ii_footer()
+    write(path, full)
 
 
 # ================================================================== PRO DESK
