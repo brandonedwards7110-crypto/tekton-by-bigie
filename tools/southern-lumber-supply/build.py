@@ -49,6 +49,7 @@ STORES = [
          blurb="Our Florida Panhandle store, serving Panama City, Panama City Beach and the surrounding area with building materials, custom doors and windows."),
 ]
 S = {s["slug"]: s for s in STORES}
+loc_path = lambda s: "installit/showroom/" if s["slug"] == "dothan-installit" else f"locations/{s['slug']}/"
 dirs = lambda s: "https://www.google.com/maps/dir/?api=1&destination=" + urllib.parse.quote(f'{html.unescape(s["addr"])}, {s["city"]}')
 
 NAV_PRODUCTS = [("Lumber &amp; Building Materials", "lumber-building-materials/"), ("Vinyl &amp; Roofing", "vinyl-roofing/"),
@@ -67,7 +68,7 @@ def org_ld():
 
 
 def store_ld(s):
-    return {"@context": "https://schema.org", "@type": s["stype"], "name": html.unescape(s["full"]), "url": ORIGIN + u(f"locations/{s['slug']}/"),
+    return {"@context": "https://schema.org", "@type": s["stype"], "name": html.unescape(s["full"]), "url": ORIGIN + u(loc_path(s)),
             "telephone": s["tel"], "image": ORIGIN + u(f"assets/photos/{s['img']}.jpg"),
             "address": {"@type": "PostalAddress", "streetAddress": html.unescape(s["addr"]), "addressLocality": s["city"].split(",")[0],
                         "addressRegion": s["city"].split(",")[1].strip().split(" ")[0], "postalCode": s["city"].split(" ")[-1], "addressCountry": "US"},
@@ -115,7 +116,7 @@ def header(active):
         cls = ' class="on"' if active and active.startswith(key) else ""
         return f'<div class="dd"><a href="{u(href)}"{cls}>{label}</a><div class="sub">{subs}</div></div>'
     prod = dd("Products", NAV_PRODUCTS, "prod", "lumber-building-materials/")
-    locs = dd("Locations", [(s["short"], f"locations/{s['slug']}/") for s in STORES] + [("All locations", "locations/")], "loc", "locations/")
+    locs = dd("Locations", [(s["short"], loc_path(s)) for s in STORES] + [("All locations", "locations/")], "loc", "locations/")
     about = dd("About", NAV_ABOUT, "about", "about/")
     on = lambda k: ' class="on"' if active == k else ""
     links = (prod + f'<a href="{u("installit/")}"{on("installit")}>Installit!</a><a href="{u("projects/")}"{on("projects")}>Projects</a>'
@@ -136,7 +137,7 @@ def header(active):
 
 
 def footer():
-    stores = "".join(f'<li><a href="{u("locations/" + s["slug"] + "/")}">{s["short"]}</a></li>' for s in STORES)
+    stores = "".join(f'<li><a href="{u(loc_path(s))}">{s["short"]}</a></li>' for s in STORES)
     return f"""</main>
 <footer class="site-footer"><div class="wrap">
   <div class="fgrid">
@@ -205,7 +206,7 @@ def store_card(s, detail=True):
   <img src="{u('assets/photos/' + s['img'] + '.jpg')}" alt="{e(html.unescape(s['full']))} storefront" loading="lazy">
   <h3>{s['short']}</h3><p class="addr">{s['addr']}<br>{s['city']}</p>
   <dl><dt>Call</dt><dd><a href="tel:{s['tel']}">{s['phone']}</a></dd><dt>Hours</dt><dd>{s['hours']}<br>{s['closed']}</dd></dl>
-  <div class="btns"><a class="btn" href="{u('locations/' + s['slug'] + '/')}">Store details</a><a class="btn ghost" href="{dirs(s)}" target="_blank" rel="noopener">Directions</a></div></article>"""
+  <div class="btns"><a class="btn" href="{u(loc_path(s))}">Store details</a><a class="btn ghost" href="{dirs(s)}" target="_blank" rel="noopener">Directions</a></div></article>"""
 
 
 REVIEWS = [
@@ -232,7 +233,7 @@ def home():
 
 <section class="finder"><div class="wrap"><div class="finder-card">
   <h2>Find your store</h2>
-  <div class="stores">{"".join(f'<a href="{u("locations/" + s["slug"] + "/")}">{s["short"]}</a>' for s in STORES)}</div>
+  <div class="stores">{"".join(f'<a href="{u(loc_path(s))}">{s["short"]}</a>' for s in STORES)}</div>
   <a class="phone" href="tel:{TEL_AL}"><small>Dothan &amp; everywhere</small>{PH_AL}</a>
 </div></div></section>
 
@@ -371,7 +372,8 @@ II_LOGO = lambda cls="": f'<img class="{cls}" src="{u("assets/photos/installit-l
 
 
 def ii_header():
-    links = [("What we install", "#install"), ("How it works", "#how"), ("Showroom", "#showroom"), ("Free consultation", "#consult")]
+    IP = u("installit/")
+    links = [("What we install", IP + "#install"), ("How it works", IP + "#how"), ("Showroom", IP + "showroom/"), ("Free consultation", IP + "#consult")]
     nav = "".join(f'<a href="{h}">{n}</a>' for n, h in links)
     m = "".join(f'<a href="{h}">{n}</a>' for n, h in links) + f'<a href="{u()}">Southern Lumber &amp; Supply home</a>'
     return f"""<div class="util ii-util"><div class="wrap">
@@ -397,7 +399,7 @@ def ii_footer():
       <div class="social"><a href="{FB}" target="_blank" rel="noopener">Facebook</a><a href="{IG}" target="_blank" rel="noopener">Instagram</a></div></div>
     <div><h4>Showroom</h4><p class="small">3246 Ross Clark Cir #1<br>Dothan, AL 36303<br><a href="tel:{TEL_AL}">{PH_AL}</a><br>Mon&ndash;Fri 9:00 AM &ndash; 5:00 PM<br>Sat &amp; Sun closed</p>
       <p class="small"><a href="{dirs(S['dothan-installit'])}" target="_blank" rel="noopener">Get directions</a></p></div>
-    <div><h4>Installit!</h4><ul><li><a href="#install">What we install</a></li><li><a href="#how">How it works</a></li><li><a href="#showroom">Showroom</a></li><li><a href="#consult">Free consultation</a></li></ul></div>
+    <div><h4>Installit!</h4><ul><li><a href="{u("installit/")}#install">What we install</a></li><li><a href="{u("installit/")}#how">How it works</a></li><li><a href="{u("installit/showroom/")}">Showroom</a></li><li><a href="{u("installit/")}#consult">Free consultation</a></li></ul></div>
     <div><h4>By Southern Lumber &amp; Supply</h4><ul><li><a href="{u()}">Southern Lumber &amp; Supply home</a></li><li><a href="{u('locations/')}">All four stores</a></li><li><a href="{u('pro-desk/')}">Pro Desk for contractors</a></li><li><a href="{LIVE}/" target="_blank" rel="noopener">Shop online</a></li></ul></div>
   </div>
   <div class="fbase">&copy; 2026 Installit! by Southern Lumber &amp; Supply &middot; Dothan, AL
@@ -446,7 +448,7 @@ def installit():
 <section class="section" id="showroom"><div class="wrap split">
   <div><p class="kicker">The showroom</p><h2>Come see it in person.</h2>
     <p>Our Installit! showroom is at 3246 Ross Clark Cir #1 in Dothan. Stop in Monday to Friday, 9:00 AM to 5:00 PM, or call and we will set a time to meet at your home.</p>
-    <div class="btns"><a class="btn" href="{dirs(S['dothan-installit'])}" target="_blank" rel="noopener">Get directions</a><a class="btn ghost" href="tel:{TEL_AL}">Call {PH_AL}</a></div></div>
+    <div class="btns"><a class="btn" href="{u("installit/showroom/")}">Showroom details</a><a class="btn ghost" href="{dirs(S['dothan-installit'])}" target="_blank" rel="noopener">Get directions</a></div></div>
   {photo('store-installit', 'The Installit! showroom storefront on Ross Clark Circle in Dothan', 'wide')}
 </div></section>
 
@@ -457,6 +459,50 @@ def installit():
     full = head("Installit! Window, Door & Cabinet Installation in Dothan, AL | Installit! by Southern Lumber & Supply",
                 "Installit! by Southern Lumber & Supply sells and installs windows, doors, cabinets, siding and decks in Dothan, AL and the Florida Panhandle. Free consultations.",
                 path, [crumbs_ld(trail), org_ld(), store_ld(S['dothan-installit'])], bc="ii") + ii_header() + body + ii_footer()
+    write(path, full)
+
+
+def installit_showroom():
+    s = S["dothan-installit"]; path = "installit/showroom/"; trail = [("Installit!", "installit/"), ("Showroom", path)]
+    mapq = urllib.parse.quote(f'{html.unescape(s["addr"])}, {s["city"]}')
+    faq = [("Do you offer free consultations?", "Yes. Meet with our sales staff at your home or here in the showroom, and we will help you plan the project to finish on time and within budget."),
+           ("Do you install what you sell?", "Yes. You pick it out, and if you like, our experienced installers take care of the installation."),
+           ("Is financing available?", "Financing is available upon request. Ask us when you stop in or call."),
+           ("Who do you work with?", "Homeowners and commercial businesses, across the Wiregrass area and the Florida Panhandle."),
+           ("What are your hours?", "Monday to Friday, 9:00 AM to 5:00 PM. Closed Saturday and Sunday.")]
+    faqh = "".join(f"<details class='ii-faq'><summary>{q}</summary><p>{a}</p></details>" for q, a in faq)
+    body = f"""
+<section class="ii-hero ii-hero-sm"><div class="wrap ii-hero-in">
+  <div><p class="crumbs ii-crumbs"><a href="{u('installit/')}">Installit!</a><span>/</span><b>Showroom</b></p>
+    <h1>See it before<br><em>you pick it.</em></h1>
+    <p class="lede">The Installit! showroom in Dothan: windows, doors, cabinets and more, with the team that installs them.</p>
+    <div class="btns"><a class="btn" href="{dirs(s)}" target="_blank" rel="noopener">Get directions</a><a class="btn outline-w" href="tel:{TEL_AL}">Call {PH_AL}</a></div></div>
+  {photo('store-installit', 'The Installit! showroom storefront on Ross Clark Circle in Dothan', 'ii-hero-photo', eager=True)}
+</div></section>
+
+<section class="section"><div class="wrap split">
+  <div><p class="kicker">Visit the showroom</p><h2>Stop in, or we come to you.</h2>
+    <ul class="info"><li><b>Address</b><span>{s['addr']}<br>{s['city']}</span></li><li><b>Call</b><span><a href="tel:{s['tel']}">{s['phone']}</a></span></li><li><b>Hours</b><span>{s['hours']}<br>{s['closed']}</span></li></ul>
+    <div class="btns"><a class="btn" href="{dirs(s)}" target="_blank" rel="noopener">Get directions</a><a class="btn ghost" href="tel:{s['tel']}">Call the showroom</a></div></div>
+  <div class="mapbox"><iframe title="Map to the Installit! showroom" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q={mapq}&z=15&output=embed"></iframe></div>
+</div></section>
+
+<section class="section cream"><div class="wrap"><div class="head"><p class="kicker">What the showroom is for</p><h2>Plan it in person.</h2></div>
+  <div class="cards"><div class="card ii-tile"><h3>See the products</h3><p>Windows, doors, cabinets, siding and decking options, with our supplier network behind them. Sierra Pacific windows are on the sign out front.</p></div>
+  <div class="card ii-tile"><h3>Talk it through</h3><p>Our experienced sales staff help you complete your project on time and within budget, at the showroom or at your home.</p></div>
+  <div class="card ii-tile"><h3>Get it installed</h3><p>Our installers handle the installation. Contractor services and free assembly are available too.</p></div></div>
+  {DN("we do not have photos of the inside of the showroom, the sales team or finished installs. Send them (and tell us who customers should ask for, with a direct line) and we will add a gallery and a &ldquo;meet the Installit! team&rdquo; section here. Please also confirm which window, door and cabinet lines you carry.")}</div></section>
+
+<section class="section"><div class="wrap"><div class="head"><p class="kicker">Good to know</p><h2>Questions, answered.</h2></div><div class="ii-faqs">{faqh}</div></div></section>
+
+<section class="section red cta"><div class="wrap"><h2>Ready for a free consultation?</h2>
+  <p class="lede" style="margin-inline:auto;color:#f3d9dc">{PH_AL} &middot; {s['addr']}, {s['city']}</p>
+  <div class="btns"><a class="btn light" href="tel:{TEL_AL}">Call {PH_AL}</a><a class="btn outline-w" href="{u('contact/')}">Send a message</a></div></div></section>
+<section class="section cream"><div class="wrap"><p class="small" style="text-align:center;margin:0">Installit! is by <a href="{u()}">Southern Lumber &amp; Supply</a>. <a href="{u('locations/')}">See all four stores</a> &middot; <a href="{u('pro-desk/')}">Pro Desk for contractors</a></p></div></section>
+"""
+    full = head("Installit! Showroom: 3246 Ross Clark Cir, Dothan, AL | Windows, Doors & Cabinets",
+                "Visit the Installit! showroom at 3246 Ross Clark Cir #1, Dothan, AL. Windows, doors, cabinets, siding and decks, sold and installed. Free consultations. Mon-Fri 9-5.",
+                path, [crumbs_ld(trail), org_ld(), store_ld(s)], bc="ii") + ii_header() + body + ii_footer()
     write(path, full)
 
 
@@ -512,7 +558,9 @@ def locations():
     write(path, assemble(path, "Locations: Dothan, AL and Lynn Haven, FL | Southern Lumber & Supply",
                          "Southern Lumber & Supply stores: 114 Zenith Rd, 519 Bic Rd and 3246 Ross Clark Cir in Dothan, AL, and 201 Mosley Dr in Lynn Haven, FL. Hours, phone and directions.", "loc", body, [crumbs_ld(trail), org_ld()] + [store_ld(s) for s in STORES]))
     for s in STORES:
-        store_page(s)
+        if s["slug"] != "dothan-installit":
+            store_page(s)
+    installit_showroom()
 
 
 def store_page(s):

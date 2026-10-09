@@ -310,3 +310,13 @@ body.ii nav.main{gap:6px}
 .ii-logo-chip .ii-logo{height:52px}
 @media(max-width:960px){.ii-hero-in{grid-template-columns:1fr;gap:34px}.ii-fgrid{grid-template-columns:repeat(2,1fr)}.ii-hero{padding:48px 0 54px}}
 @media(max-width:640px){.ii-fgrid{grid-template-columns:1fr}.ii-logo{height:46px}.ii-util .l span{display:none}}
+.ii-hero-sm{padding:54px 0 60px}
+.ii-hero-sm h1{font-size:clamp(2.4rem,4.8vw,3.8rem)}
+.ii-crumbs{color:#bdbdbb}.ii-crumbs a{color:#fff}.ii-crumbs b{color:#fff}
+.ii-faqs{max-width:820px}
+.ii-faq{border:1px solid var(--line);border-radius:6px;margin:0 0 10px;background:#fff}
+.ii-faq summary{cursor:pointer;padding:16px 20px;font-family:var(--head);font-weight:700;font-size:1.25rem;letter-spacing:.02em;text-transform:uppercase;color:var(--ink);list-style:none}
+.ii-faq summary::-webkit-details-marker{display:none}
+.ii-faq summary::after{content:"+";float:right;color:var(--red);font-size:1.5rem;line-height:1}
+.ii-faq[open] summary::after{content:"\2212"}
+.ii-faq p{margin:0;padding:0 20px 18px}
