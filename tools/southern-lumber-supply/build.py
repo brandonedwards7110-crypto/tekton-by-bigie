@@ -49,6 +49,7 @@ STORES = [
          blurb="Our Florida Panhandle store, serving Panama City, Panama City Beach and the surrounding area with building materials, custom doors and windows."),
 ]
 S = {s["slug"]: s for s in STORES}
+STORES = [s for s in STORES if s["slug"] != "dothan-installit"]   # Installit! is its own brand: not listed as a Southern store
 loc_path = lambda s: "installit/showroom/" if s["slug"] == "dothan-installit" else f"locations/{s['slug']}/"
 dirs = lambda s: "https://www.google.com/maps/dir/?api=1&destination=" + urllib.parse.quote(f'{html.unescape(s["addr"])}, {s["city"]}')
 
@@ -248,7 +249,7 @@ def home():
 </div></section>
 
 <section class="stats"><div class="wrap"><ul>
-  <li><b>Since 1977</b><span>family-owned</span></li><li><b>4 stores</b><span>Dothan, AL &amp; Lynn Haven, FL</span></li>
+  <li><b>Since 1977</b><span>family-owned</span></li><li><b>3 stores</b><span>Dothan, AL &amp; Lynn Haven, FL</span></li>
   <li><b>125 miles</b><span>jobsite delivery</span></li><li><b>Free takeoffs</b><span>for your project</span></li></ul></div></section>
 
 <section class="section dark pro"><div class="wrap">
@@ -298,8 +299,8 @@ def home():
 </div></section>
 
 <section class="section"><div class="wrap">
-  <div class="head"><p class="kicker">Four stores</p><h2>Find us.</h2></div>
-  <div class="cards four">{"".join(store_card(s) for s in STORES)}</div>
+  <div class="head"><p class="kicker">Three stores</p><h2>Find us.</h2></div>
+  <div class="cards">{"".join(store_card(s) for s in STORES)}</div>
 </div></section>
 
 <section class="section cream"><div class="wrap">
@@ -400,7 +401,7 @@ def ii_footer():
     <div><h4>Showroom</h4><p class="small">3246 Ross Clark Cir #1<br>Dothan, AL 36303<br><a href="tel:{TEL_AL}">{PH_AL}</a><br>Mon&ndash;Fri 9:00 AM &ndash; 5:00 PM<br>Sat &amp; Sun closed</p>
       <p class="small"><a href="{dirs(S['dothan-installit'])}" target="_blank" rel="noopener">Get directions</a></p></div>
     <div><h4>Installit!</h4><ul><li><a href="{u("installit/")}#install">What we install</a></li><li><a href="{u("installit/")}#how">How it works</a></li><li><a href="{u("installit/showroom/")}">Showroom</a></li><li><a href="{u("installit/")}#consult">Free consultation</a></li></ul></div>
-    <div><h4>By Southern Lumber &amp; Supply</h4><ul><li><a href="{u()}">Southern Lumber &amp; Supply home</a></li><li><a href="{u('locations/')}">All four stores</a></li><li><a href="{u('pro-desk/')}">Pro Desk for contractors</a></li><li><a href="{LIVE}/" target="_blank" rel="noopener">Shop online</a></li></ul></div>
+    <div><h4>By Southern Lumber &amp; Supply</h4><ul><li><a href="{u()}">Southern Lumber &amp; Supply home</a></li><li><a href="{u('locations/')}">Southern&rsquo;s three stores</a></li><li><a href="{u('pro-desk/')}">Pro Desk for contractors</a></li><li><a href="{LIVE}/" target="_blank" rel="noopener">Shop online</a></li></ul></div>
   </div>
   <div class="fbase">&copy; 2026 Installit! by Southern Lumber &amp; Supply &middot; Dothan, AL
     <p class="note" style="margin-top:16px">[Draft preview &mdash; Installit! is built here as its own brand with its own look, navigation and footer, and it stays linked to Southern Lumber &amp; Supply. It can live at southernlumbersupply.com/installit or, if you want, on its own web address.]</p></div>
@@ -498,7 +499,7 @@ def installit_showroom():
 <section class="section red cta"><div class="wrap"><h2>Ready for a free consultation?</h2>
   <p class="lede" style="margin-inline:auto;color:#f3d9dc">{PH_AL} &middot; {s['addr']}, {s['city']}</p>
   <div class="btns"><a class="btn light" href="tel:{TEL_AL}">Call {PH_AL}</a><a class="btn outline-w" href="{u('contact/')}">Send a message</a></div></div></section>
-<section class="section cream"><div class="wrap"><p class="small" style="text-align:center;margin:0">Installit! is by <a href="{u()}">Southern Lumber &amp; Supply</a>. <a href="{u('locations/')}">See all four stores</a> &middot; <a href="{u('pro-desk/')}">Pro Desk for contractors</a></p></div></section>
+<section class="section cream"><div class="wrap"><p class="small" style="text-align:center;margin:0">Installit! is by <a href="{u()}">Southern Lumber &amp; Supply</a>. <a href="{u('locations/')}">See Southern&rsquo;s three stores</a> &middot; <a href="{u('pro-desk/')}">Pro Desk for contractors</a></p></div></section>
 """
     full = head("Installit! Showroom: 3246 Ross Clark Cir, Dothan, AL | Windows, Doors & Cabinets",
                 "Visit the Installit! showroom at 3246 Ross Clark Cir #1, Dothan, AL. Windows, doors, cabinets, siding and decks, sold and installed. Free consultations. Mon-Fri 9-5.",
@@ -550,13 +551,13 @@ def projects():
 # ================================================================== LOCATIONS
 def locations():
     path = "locations/"; trail = [("Home", ""), ("Locations", path)]
-    body = page_hero(trail, "Four stores. One name.", "Three in Dothan, Alabama and one in Lynn Haven, Florida. Same people, same service.", "store-zenith") + f"""
-<section class="section"><div class="wrap"><div class="cards four">{"".join(store_card(s) for s in STORES)}</div>
+    body = page_hero(trail, "Three stores. One name.", "Two in Dothan, Alabama and one in Lynn Haven, Florida. Same people, same service.", "store-zenith") + f"""
+<section class="section"><div class="wrap"><div class="cards">{"".join(store_card(s) for s in STORES)}</div>
   {DN("the Lynn Haven store is called &ldquo;Panama City&rdquo; on your current website but Lynn Haven on Google and Facebook. We used Lynn Haven (the address is 201 Mosley Dr, Lynn Haven, FL 32444) and mention Panama City as the area. Your Google profile for the old Marianna store still says &ldquo;Temporarily closed&rdquo; and your home page still mentions Marianna: tell us whether it is closed for good and we will handle it.")}</div></section>
 <section class="section cream"><div class="wrap"><div class="head"><p class="kicker">Where we deliver</p><h2>Delivery up to 125 miles.</h2><p class="lede">We deliver the building supplies for your entire home, up to 125 miles, across the Wiregrass area and the Florida Panhandle.</p></div></div></section>
 {cta_band("Not sure which store?", "Call 334-489-WOOD and we will point you to the right one.")}"""
     write(path, assemble(path, "Locations: Dothan, AL and Lynn Haven, FL | Southern Lumber & Supply",
-                         "Southern Lumber & Supply stores: 114 Zenith Rd, 519 Bic Rd and 3246 Ross Clark Cir in Dothan, AL, and 201 Mosley Dr in Lynn Haven, FL. Hours, phone and directions.", "loc", body, [crumbs_ld(trail), org_ld()] + [store_ld(s) for s in STORES]))
+                         "Southern Lumber & Supply stores: 114 Zenith Rd and 519 Bic Rd in Dothan, AL, and 201 Mosley Dr in Lynn Haven, FL. Hours, phone and directions.", "loc", body, [crumbs_ld(trail), org_ld()] + [store_ld(s) for s in STORES]))
     for s in STORES:
         if s["slug"] != "dothan-installit":
             store_page(s)
@@ -597,7 +598,7 @@ def about():
     body = page_hero(trail, "Our story", "Founded in 1977 as Ansley&rsquo;s Building Materials. Family-owned and rooted in respect, service and integrity.", "store-zenith") + f"""
 <section class="section"><div class="wrap split">
   <div><p class="kicker">Who we are</p><h2>Built on relationships.</h2>
-    <p>Founded in 1977 as Ansley&rsquo;s Building Materials, our family-owned business has served homeowners, builders and contractors for decades. In 2013 we became Southern Lumber Supply, expanding our vision while honoring the values that built our reputation. Today we have four locations, and we still put our relationships first.</p>
+    <p>Founded in 1977 as Ansley&rsquo;s Building Materials, our family-owned business has served homeowners, builders and contractors for decades. In 2013 we became Southern Lumber Supply, expanding our vision while honoring the values that built our reputation. Today we have three stores plus the Installit! showroom, and we still put our relationships first.</p>
     <p>We offer an elevated selection of premium building materials, complemented by generations of expertise and an uncompromising standard of personalized service.</p>
     {DN("your current About page says the business has served customers &ldquo;for nearly three decades,&rdquo; which does not match 1977, and an older page said &ldquo;more than 150 years.&rdquo; We used 1977. Please confirm the founding story and who is in the family.")}</div>
   {photo('store-zenith', 'The Zenith Road store in Dothan, Alabama', 'wide')}
@@ -607,9 +608,9 @@ def about():
   <div class="feature-grid"><div class="feature"><h3>Respect</h3><p>We treat everyone with courtesy, politeness, and kindness, and value sharing opinions and ideas.</p></div>
   <div class="feature"><h3>Integrity</h3><p>We do the right thing, upholding honest and ethical standards in every part of our business.</p></div>
   <div class="feature"><h3>Accountability</h3><p>We take ownership of our actions and hold ourselves to the highest standards.</p></div></div></div></section>
-{cta_band("Come meet us", "Four stores, one team.")}"""
+{cta_band("Come meet us", "Three stores, one team.")}"""
     write(path, assemble(path, "Our Story: Since 1977 | Southern Lumber & Supply, Dothan AL",
-                         "Southern Lumber & Supply started in 1977 as Ansley's Building Materials. Family-owned, with four locations in Dothan, AL and Lynn Haven, FL.", "about" + path, body, [crumbs_ld(trail), org_ld()]))
+                         "Southern Lumber & Supply started in 1977 as Ansley's Building Materials. Family-owned, with three stores in Dothan, AL and Lynn Haven, FL, plus the Installit! showroom.", "about" + path, body, [crumbs_ld(trail), org_ld()]))
 
 
 def team():
@@ -647,7 +648,7 @@ def careers():
     <label for="c-m">What kind of work are you looking for?</label><textarea id="c-m" rows="4"></textarea>
     <button class="btn" type="button">Send</button><p style="margin:12px 0 0;font-size:.9rem;color:var(--steel)">Preview only: this form does not send yet.</p></div>
 </div></section>
-{cta_band("Prefer to stop in?", "Ask for the manager at any of our four stores.")}"""
+{cta_band("Prefer to stop in?", "Ask for the manager at any of our three stores.")}"""
     write(path, assemble(path, "Careers at Southern Lumber & Supply | Dothan, AL & Lynn Haven, FL",
                          "Jobs at Southern Lumber & Supply, a family-owned building-supply company in Dothan, AL and Lynn Haven, FL: sales, yard, door shop, installation and office.", "about" + path, body, [crumbs_ld(trail), org_ld()]))
 
@@ -657,7 +658,7 @@ def contact():
     body = page_hero(trail, "Contact us", "Call a store, send a message, or stop in.", "store-lynnhaven") + f"""
 <section class="section"><div class="wrap split">
   <div><p class="kicker">Call or visit</p><h2>We are here Monday to Friday.</h2>
-    <ul class="info"><li><b>Dothan</b><span><a href="tel:{TEL_AL}">{PH_AL}</a><br>Zenith Road &middot; Bic Road &middot; Installit! Showroom</span></li>
+    <ul class="info"><li><b>Dothan</b><span><a href="tel:{TEL_AL}">{PH_AL}</a><br>Zenith Road &middot; Bic Road</span></li>
     <li><b>Lynn Haven</b><span><a href="tel:{TEL_FL}">{PH_FL}</a><br>201 Mosley Dr, Lynn Haven, FL 32444</span></li>
     <li><b>Email</b><span>{PH("general contact email")}</span></li>
     <li><b>Follow</b><span><a href="{FB}" target="_blank" rel="noopener">Facebook</a> &middot; <a href="{IG}" target="_blank" rel="noopener">Instagram</a> &middot; <a href="{LI}" target="_blank" rel="noopener">LinkedIn</a></span></li></ul>
